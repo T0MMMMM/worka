@@ -1,51 +1,47 @@
 import { Checklist, Sparkle, Target } from "@/src/components/ui/Icons";
-import { theme } from "@/src/constants/theme";
+import { useTheme } from "@/src/hooks/useTheme";
 import React from "react";
 import { StyleSheet, View } from "react-native";
 import { StatItem } from "./StatItem";
 
-interface StatsData {
-  tasksCompleted: number;
-  objectivesReached: number;
-  productivity: number;
-}
-
 interface StatsContainerProps {
-  stats: StatsData;
+  stats: { tasksCompleted: number; objectivesReached: number; productivity: number };
 }
 
 export function StatsContainer({ stats }: StatsContainerProps) {
+  const { colors } = useTheme();
+
   return (
-    <View style={styles.statsContainer}>
+    <View style={styles.container}>
       <StatItem
-        icon={<Checklist size={16} color={theme.colors.onPrimary} />}
-        label="Tâches terminées"
+        icon={<Checklist size={18} color={colors.danger} />}
+        label="Tâches"
         value={stats.tasksCompleted.toString()}
-        backgroundColor="#FFE8E0"
-        delay={300}
+        backgroundColor={colors.dangerSoft}
+        delay={150}
       />
       <StatItem
-        icon={<Target size={16} color={theme.colors.onPrimary} />}
-        label="Objectifs atteints"
+        icon={<Target size={18} color={colors.accent} />}
+        label="Objectifs"
         value={stats.objectivesReached.toString()}
-        backgroundColor="#E0F2FF"
-        delay={400}
+        backgroundColor={colors.accentSoft}
+        delay={250}
       />
       <StatItem
-        icon={<Sparkle size={16} color={theme.colors.onPrimary} />}
+        icon={<Sparkle size={18} color={colors.success} />}
         label="Productivité"
         value={`${stats.productivity}%`}
-        backgroundColor="#E8F5E9"
-        delay={500}
+        backgroundColor={colors.successSoft}
+        delay={350}
       />
     </View>
   );
 }
 
 const styles = StyleSheet.create({
-  statsContainer: {
-    paddingHorizontal: 40,
-    marginTop: 20,
-    position: "relative",
+  container: {
+    flexDirection: "row",
+    paddingHorizontal: 20,
+    gap: 12,
   },
 });

@@ -1,48 +1,56 @@
-import React from "react";
-import { FlatList, StyleSheet, View } from "react-native";
-import { Task, TaskItem } from "./TaskItem";
+import { Task } from "@/src/types/task";
+import * as Haptics from "expo-haptics";
+import React, { useCallback } from "react";
+import { StyleSheet, View } from "react-native";
+import DraggableFlatList, {
+  RenderItemParams,
+  ScaleDecorator,
+} from "react-native-draggable-flatlist";
+import { SwipeableTaskItem } from "./SwipeableTaskItem";
 
 interface TasksListProps {
   tasks: Task[];
   onToggle: (id: string) => void;
+  onDelete?: (id: string) => void;
+  onReorder?: (tasks: Task[]) => void;
 }
 
-export function TasksList({ tasks, onToggle }: TasksListProps) {
-  const renderTask = ({ item, index }: { item: Task; index: number }) => (
-    <TaskItem task={item} index={index} onToggle={onToggle} />
+export function TasksList({ tasks, onToggle, onDelete, onReorder }: TasksListProps) {
+  const renderItem = useCallback(
+    ({ item, getIndex, drag, isActive }: RenderItemParams<Task>) => {
+      const index = getIndex() ?? 0;
+      return (
+        <ScaleDecorator>
+          <SwipeableTaskItem
+            task={item}
+            index={index}
+            onToggle={onToggle}
+            onDelete={onDelete ?? (() => {})}
+            onDrag={() => {
+              Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light);
+              drag();
+            }}
+            isActive={isActive}
+          />
+        </ScaleDecorator>
+      );
+    },
+    [onToggle, onDelete]
   );
 
   return (
-    <View style={styles.timelineWrapper}>
-      <View style={styles.dottedLine} />
-      <FlatList
+    <View style={styles.container}>
+      <DraggableFlatList
         data={tasks}
-        renderItem={renderTask}
+        renderItem={renderItem}
         keyExtractor={(item) => item.id}
-        contentContainerStyle={styles.taskList}
-        showsVerticalScrollIndicator={false}
+        onDragEnd={({ data }) => onReorder?.(data)}
+        scrollEnabled={false}
       />
     </View>
   );
 }
 
 const styles = StyleSheet.create({
-  timelineWrapper: {
-    flex: 1,
-    position: "relative",
-  },
-  dottedLine: {
-    position: "absolute",
-    left: 54,
-    top: 10,
-    bottom: 150,
-    width: 1,
-    borderStyle: "dashed",
-    borderWidth: 1,
-    borderColor: "rgba(0,0,0,0.1)",
-    zIndex: 0,
-  },
-  taskList: {
-    paddingBottom: 100,
-  },
+  container: {},
 });

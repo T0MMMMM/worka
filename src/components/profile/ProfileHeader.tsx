@@ -1,8 +1,8 @@
 import { UserCircle } from "@/src/components/ui/Icons";
-import { theme } from "@/src/constants/theme";
+import { useTheme } from "@/src/hooks/useTheme";
 import { MotiView } from "moti";
 import React from "react";
-import { StyleSheet, Text, TouchableOpacity, View } from "react-native";
+import { StyleSheet, Text, View } from "react-native";
 
 interface ProfileHeaderProps {
   name: string;
@@ -10,70 +10,45 @@ interface ProfileHeaderProps {
 }
 
 export function ProfileHeader({ name, email }: ProfileHeaderProps) {
-  return (
-    <View style={styles.profileHeader}>
-      <MotiView
-        from={{ scale: 0.5, opacity: 0 }}
-        animate={{ scale: 1, opacity: 1 }}
-        transition={{ type: "spring", damping: 15 }}
-        style={styles.avatarContainer}
-      >
-        <UserCircle size={100} color={theme.colors.onPrimary} />
-        <TouchableOpacity style={styles.editBadge}>
-          <View style={styles.editBadgeInner} />
-        </TouchableOpacity>
-      </MotiView>
+  const { colors, fonts } = useTheme();
 
-      <Text style={styles.userName}>{name}</Text>
-      <Text style={styles.userEmail}>{email}</Text>
-    </View>
+  return (
+    <MotiView
+      from={{ opacity: 0 }}
+      animate={{ opacity: 1 }}
+      transition={{ type: "timing", duration: 350 }}
+      style={styles.container}
+    >
+      <View style={[styles.avatar, { backgroundColor: colors.accentSoft }]}>
+        <UserCircle size={80} color={colors.accent} />
+      </View>
+      <Text style={[styles.name, { fontFamily: fonts.bold, color: colors.text }]}>{name}</Text>
+      <Text style={[styles.email, { fontFamily: fonts.regular, color: colors.textSecondary }]}>
+        {email}
+      </Text>
+    </MotiView>
   );
 }
 
 const styles = StyleSheet.create({
-  profileHeader: {
+  container: {
     alignItems: "center",
     paddingTop: 40,
-    paddingBottom: 40,
+    paddingBottom: 32,
   },
-  avatarContainer: {
-    position: "relative",
-    marginBottom: 20,
-    backgroundColor: "rgba(255, 255, 255, 0.5)",
-    borderRadius: 60,
-    padding: 10,
-  },
-  editBadge: {
-    position: "absolute",
-    right: 5,
-    bottom: 5,
-    width: 24,
-    height: 24,
-    borderRadius: 12,
-    backgroundColor: "#FFF",
+  avatar: {
+    width: 100,
+    height: 100,
+    borderRadius: 50,
     justifyContent: "center",
     alignItems: "center",
-    shadowColor: "#000",
-    shadowOffset: { width: 0, height: 2 },
-    shadowOpacity: 0.1,
-    shadowRadius: 4,
-    elevation: 2,
+    marginBottom: 16,
   },
-  editBadgeInner: {
-    width: 12,
-    height: 12,
-    borderRadius: 6,
-    backgroundColor: theme.colors.violet,
+  name: {
+    fontSize: 26,
   },
-  userName: {
-    fontSize: 28,
-    fontFamily: theme.fonts.urbanistBold,
-    color: theme.colors.onPrimary,
-  },
-  userEmail: {
-    fontSize: 16,
-    fontFamily: theme.fonts.urbanist,
-    color: "#888",
+  email: {
+    fontSize: 15,
     marginTop: 4,
   },
 });

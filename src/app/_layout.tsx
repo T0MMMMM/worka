@@ -1,30 +1,30 @@
-import { Ballet_400Regular } from "@expo-google-fonts/ballet";
-import { EBGaramond_400Regular, EBGaramond_700Bold } from "@expo-google-fonts/eb-garamond";
-import { GravitasOne_400Regular } from "@expo-google-fonts/gravitas-one";
-import { Unbounded_400Regular } from "@expo-google-fonts/unbounded";
-import { Urbanist_300Light, Urbanist_400Regular, Urbanist_600SemiBold, Urbanist_700Bold, Urbanist_800ExtraBold } from "@expo-google-fonts/urbanist";
+import {
+  Urbanist_300Light,
+  Urbanist_400Regular,
+  Urbanist_600SemiBold,
+  Urbanist_700Bold,
+  Urbanist_800ExtraBold,
+} from "@expo-google-fonts/urbanist";
 import { useFonts } from "expo-font";
 import { Stack } from "expo-router";
 import * as SplashScreen from "expo-splash-screen";
+import { useThemeStore } from "@/src/store/themeStore";
+import { StatusBar } from "expo-status-bar";
 import { useEffect } from "react";
 import { GestureHandlerRootView } from "react-native-gesture-handler";
 
-// Keep the splash screen visible while we fetch resources
 SplashScreen.preventAutoHideAsync();
 
 export default function RootLayout() {
   const [loaded, error] = useFonts({
-    EBGaramond_400Regular,
-    EBGaramond_700Bold,
-    Unbounded_400Regular,
-    GravitasOne_400Regular,
-    Ballet_400Regular,
     Urbanist_300Light,
     Urbanist_400Regular,
     Urbanist_600SemiBold,
     Urbanist_700Bold,
     Urbanist_800ExtraBold,
   });
+
+  const themeMode = useThemeStore((s) => s.mode);
 
   useEffect(() => {
     if (loaded || error) {
@@ -38,22 +38,26 @@ export default function RootLayout() {
 
   return (
     <GestureHandlerRootView style={{ flex: 1 }}>
+      <StatusBar style={themeMode === "dark" ? "light" : "dark"} />
       <Stack screenOptions={{ headerShown: false }}>
         <Stack.Screen name="index" />
+        <Stack.Screen name="(auth)" />
         <Stack.Screen name="(tabs)" />
         <Stack.Screen
           name="modals/add-task"
-          options={{
-            presentation: 'modal',
-            animation: 'slide_from_bottom'
-          }}
+          options={{ presentation: "modal", animation: "slide_from_bottom" }}
         />
         <Stack.Screen
           name="modals/add-objective"
-          options={{
-            presentation: 'modal',
-            animation: 'slide_from_bottom'
-          }}
+          options={{ presentation: "modal", animation: "slide_from_bottom" }}
+        />
+        <Stack.Screen
+          name="modals/archive"
+          options={{ presentation: "modal", animation: "slide_from_bottom" }}
+        />
+        <Stack.Screen
+          name="modals/theme-picker"
+          options={{ presentation: "modal", animation: "slide_from_bottom" }}
         />
       </Stack>
     </GestureHandlerRootView>

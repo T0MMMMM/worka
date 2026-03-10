@@ -1,6 +1,12 @@
-import { ModalFooter, ModalHeader, ModalInput, ModalSection } from "@/src/components/modals
+import {
+  ModalFooter,
+  ModalHeader,
+  ModalInput,
+  ModalSection,
+} from "@/src/components/modals";
 import { Clock, Target } from "@/src/components/ui/Icons";
-import { theme } from "@/src/constants/theme";
+import { useTheme } from "@/src/hooks/useTheme";
+import { useObjectiveStore } from "@/src/store/objectiveStore";
 import { useRouter } from "expo-router";
 import moment from "moment";
 import "moment/locale/fr";
@@ -18,37 +24,21 @@ import {
 import DateTimePickerModal from "react-native-modal-datetime-picker";
 
 const COLORS = [
-  { label: "Bleu", color: "#007AFF" },
-  { label: "Violet", color: "#AF52DE" },
-  { label: "Rouge", color: "#FF3B30" },
-  { label: "Vert", color: "#34C759" },
-  { label: "Orange", color: "#FF9500" },
+  { label: "Bleu", color: "#2196F3" },
+  { label: "Violet", color: "#7B61FF" },
+  { label: "Rouge", color: "#EF4444" },
+  { label: "Vert", color: "#22C55E" },
+  { label: "Orange", color: "#F59E0B" },
 ];
 
 export default function AddObjectiveModal() {
   const router = useRouter();
+  const { colors, fonts } = useTheme();
   const { height: SCREEN_HEIGHT } = useWindowDimensions();
   const [title, setTitle] = useState("");
   const [deadline, setDeadline] = useState(moment().add(30, "days").toDate());
   const [isDatePickerVisible, setDatePickerVisibility] = useState(false);
   const [selectedColor, setSelectedColor] = useState(COLORS[0]);
-
-  const handleAdd = () => {
-    router.back();
-  };
-
-  const showDatePicker = () => {
-    setDatePickerVisibility(true);
-  };
-
-  const hideDatePicker = () => {
-    setDatePickerVisibility(false);
-  };
-
-  const handleConfirmDate = (date: Date) => {
-    setDeadline(date);
-    hideDatePicker();
-  };
 
   return (
     <View style={styles.container}>
@@ -58,14 +48,13 @@ export default function AddObjectiveModal() {
         onPress={() => router.back()}
       />
 
-      <View style={[styles.modalContent, { maxHeight: SCREEN_HEIGHT * 0.95 }]}>
-        <View style={styles.modalHandle} />
-
-        <View style={styles.contentContainer}>
+      <View style={[styles.modal, { maxHeight: SCREEN_HEIGHT * 0.95, backgroundColor: colors.surface }]}>
+        <View style={[styles.handle, { backgroundColor: colors.textMuted }]} />
+        <View style={styles.content}>
           <ModalHeader
             title="Nouvel objectif"
             onClose={() => router.back()}
-            icon={<Target size={24} color={theme.colors.text} />}
+            icon={<Target size={20} color={colors.accent} />}
           />
 
           <KeyboardAvoidingView
@@ -83,12 +72,14 @@ export default function AddObjectiveModal() {
 
               <ModalSection label="Date d'échéance">
                 <TouchableOpacity
-                  style={styles.dateSelector}
-                  onPress={showDatePicker}
+                  style={[styles.selector, { backgroundColor: colors.bg, borderColor: colors.border }]}
+                  onPress={() => setDatePickerVisibility(true)}
                   activeOpacity={0.7}
                 >
-                  <Clock size={20} color={theme.colors.systemBlue} />
-                  <Text style={styles.dateText}>
+                  <View style={[styles.selectorIcon, { backgroundColor: colors.accentSoft }]}>
+                    <Clock size={18} color={colors.accent} />
+                  </View>
+                  <Text style={[styles.selectorText, { color: colors.text, fontFamily: fonts.bold }]}>
                     {moment(deadline).format("DD MMMM YYYY")}
                   </Text>
                 </TouchableOpacity>
@@ -97,32 +88,23 @@ export default function AddObjectiveModal() {
               <ModalSection label="Couleur">
                 <View style={styles.colorsGrid}>
                   {COLORS.map((c) => {
-                    const isSelected = selectedColor.label === c.label;
+                    const active = selectedColor.label === c.label;
                     return (
                       <TouchableOpacity
                         key={c.label}
                         onPress={() => setSelectedColor(c)}
                         style={[
                           styles.colorPill,
-                          isSelected && {
-                            backgroundColor: c.color + "20",
-                            borderColor: c.color
-                          },
-                          !isSelected && {
-                            borderColor: theme.colors.separator
-                          }
+                          active
+                            ? { backgroundColor: c.color + "12", borderColor: c.color }
+                            : { borderColor: colors.border },
                         ]}
                       >
-                        <View
-                          style={[
-                            styles.colorDot,
-                            { backgroundColor: c.color },
-                          ]}
-                        />
+                        <View style={[styles.colorDot, { backgroundColor: c.color }]} />
                         <Text
                           style={[
                             styles.colorLabel,
-                            isSelected ? { color: c.color } : { color: theme.colors.text }
+                            { color: active ? c.color : colors.text, fontFamily: fonts.bold },
                           ]}
                         >
                           {c.label}
@@ -135,15 +117,27 @@ export default function AddObjectiveModal() {
             </ScrollView>
           </KeyboardAvoidingView>
 
-          <ModalFooter label="Créer l'objectif" onPress={handleAdd} />
+          <ModalFooter label="Créer l'objectif" onPress={() => {
+            if (!title.trim()) return;
+            const daysLeft = moment(deadline).diff(moment(), "days");
+            useObjectiveStore.getState().addObjective({
+              title: title.trim(),
+              progress: 0,
+              color: selectedColor.color,
+              accent: selectedColor.color,
+              daysLeft: Math.max(0, daysLeft),
+              completed: false,
+            });
+            router.back();
+          }} />
         </View>
       </View>
 
       <DateTimePickerModal
         isVisible={isDatePickerVisible}
         mode="date"
-        onConfirm={handleConfirmDate}
-        onCancel={hideDatePicker}
+        onConfirm={(d) => { setDeadline(d); setDatePickerVisibility(false); }}
+        onCancel={() => setDatePickerVisibility(false)}
         locale="fr_FR"
         confirmTextIOS="Confirmer"
         cancelTextIOS="Annuler"
@@ -156,49 +150,51 @@ const styles = StyleSheet.create({
   container: {
     flex: 1,
     justifyContent: "flex-end",
-    backgroundColor: "rgba(0,0,0,0.4)",
+    backgroundColor: "rgba(0,0,0,0.35)",
   },
   backdrop: {
     ...StyleSheet.absoluteFillObject,
   },
-  modalContent: {
-    backgroundColor: theme.colors.card,
+  modal: {
     borderTopLeftRadius: 32,
     borderTopRightRadius: 32,
-    shadowColor: "#000",
-    shadowOffset: { width: 0, height: -5 },
-    shadowOpacity: 0.1,
-    shadowRadius: 20,
-    elevation: 10,
     flex: 1,
-    paddingBottom: 0,
+    shadowColor: "#000",
+    shadowOffset: { width: 0, height: -8 },
+    shadowOpacity: 0.08,
+    shadowRadius: 24,
+    elevation: 10,
   },
-  modalHandle: {
+  handle: {
     width: 40,
     height: 5,
-    backgroundColor: "#E0E0E0",
     borderRadius: 3,
     alignSelf: "center",
-    marginTop: 12,
-    marginBottom: 8,
+    marginTop: 10,
+    marginBottom: 6,
   },
-  contentContainer: {
+  content: {
     flex: 1,
     paddingHorizontal: 24,
-    paddingTop: 10,
+    paddingTop: 14,
   },
-  dateSelector: {
+  selector: {
     flexDirection: "row",
     alignItems: "center",
-    backgroundColor: theme.colors.background,
-    borderRadius: 12,
+    borderRadius: 16,
     padding: 16,
     gap: 12,
+    borderWidth: 1,
   },
-  dateText: {
-    fontSize: 17,
-    fontFamily: theme.fonts.urbanistSemiBold,
-    color: theme.colors.text,
+  selectorIcon: {
+    width: 34,
+    height: 34,
+    borderRadius: 12,
+    justifyContent: "center",
+    alignItems: "center",
+  },
+  selectorText: {
+    fontSize: 18,
   },
   colorsGrid: {
     flexDirection: "row",
@@ -206,23 +202,21 @@ const styles = StyleSheet.create({
     gap: 10,
   },
   colorPill: {
-    width: '48%',
+    width: "47%",
     flexDirection: "row",
     alignItems: "center",
     paddingHorizontal: 16,
     paddingVertical: 14,
     borderRadius: 16,
-    borderWidth: 1,
+    borderWidth: 1.5,
     gap: 10,
-    backgroundColor: theme.colors.background,
   },
   colorDot: {
-    width: 10,
-    height: 10,
-    borderRadius: 5,
+    width: 12,
+    height: 12,
+    borderRadius: 6,
   },
   colorLabel: {
     fontSize: 14,
-    fontFamily: theme.fonts.urbanistSemiBold,
   },
 });

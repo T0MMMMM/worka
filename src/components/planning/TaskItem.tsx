@@ -1,24 +1,16 @@
+import { Task } from "@/src/types/task";
 import { CheckCircle } from "@/src/components/ui/Icons";
-import { theme } from "@/src/constants/theme";
+import { useTheme } from "@/src/hooks/useTheme";
 import { MotiView } from "moti";
 import React from "react";
 import { StyleSheet, Text, TouchableOpacity, View } from "react-native";
-
-export interface Task {
-  id: string;
-  title: string;
-  time: string;
-  duration: string;
-  status: "pending" | "completed";
-  category: string;
-  color: string;
-  priority: "high" | "medium" | "low";
-}
+import { RecurrenceBadge } from "./RecurrenceBadge";
+import { StreakIndicator } from "./StreakIndicator";
 
 const PRIORITY_COLORS = {
-  high: "#FF5252",
-  medium: "#FFB142",
-  low: "#4CAF50",
+  high: "#EF4444",
+  medium: "#F59E0B",
+  low: "#22C55E",
 };
 
 interface TaskItemProps {
@@ -28,68 +20,76 @@ interface TaskItemProps {
 }
 
 export function TaskItem({ task, index, onToggle }: TaskItemProps) {
+  const { colors, fonts } = useTheme();
+  const isCompleted = task.status === "completed";
+  const priorityColor = PRIORITY_COLORS[task.priority];
+
   return (
     <MotiView
-      from={{ opacity: 0, translateY: 10 }}
+      from={{ opacity: 0, translateY: 8 }}
       animate={{ opacity: 1, translateY: 0 }}
-      transition={{ type: "spring", damping: 15, delay: index * 100 }}
-      style={styles.taskItemContainer}
+      transition={{ type: "timing", duration: 350, delay: index * 50 }}
     >
       <TouchableOpacity
         onPress={() => onToggle(task.id)}
         activeOpacity={0.7}
-        style={styles.taskPressable}
+        style={[styles.card, isCompleted && styles.cardCompleted]}
       >
-        <View style={styles.timeColumn}>
-          <Text style={styles.timeText}>{task.time}</Text>
-        </View>
-
-        <View style={styles.markerContainer}>
+        {/* Status indicator */}
+        <View style={styles.statusCol}>
+          <View style={[styles.timeLine, { backgroundColor: task.color + "20" }]} />
           <View
             style={[
-              styles.markerSimpleDot,
-              { backgroundColor: task.color },
-              task.status === "completed" && styles.markerDotCompleted,
+              styles.statusRing,
+              isCompleted
+                ? { backgroundColor: colors.success }
+                : { borderColor: task.color, borderWidth: 2 },
             ]}
-          />
+          >
+            {isCompleted && <CheckCircle size={20} color="#FFF" />}
+          </View>
+          <View style={[styles.timeLine, { backgroundColor: task.color + "20" }]} />
         </View>
 
-        <View
-          style={[
-            styles.taskContent,
-            task.status === "completed" && styles.taskContentCompleted,
-          ]}
-        >
-          <View style={styles.taskMainRow}>
-            <View style={{ flex: 1 }}>
-              <View style={styles.categoryRow}>
-                <Text style={[styles.taskCategory, { color: task.color }]}>
-                  {task.category}
-                </Text>
-                <View
-                  style={[
-                    styles.priorityBadge,
-                    { backgroundColor: PRIORITY_COLORS[task.priority] },
-                  ]}
-                >
-                  <View style={styles.priorityDot} />
-                  <Text style={styles.priorityText}>{task.priority}</Text>
-                </View>
-              </View>
-              <Text
-                style={[
-                  styles.taskTitle,
-                  task.status === "completed" && styles.taskTitleCompleted,
-                ]}
-              >
-                {task.title}
+        {/* Content */}
+        <View style={[styles.content, { backgroundColor: colors.surface }]}>
+          <View style={styles.row}>
+            <Text style={[styles.time, { color: colors.text, fontFamily: fonts.bold }]}>
+              {task.time}
+            </Text>
+            <View style={[styles.durationBadge, { backgroundColor: colors.elevated }]}>
+              <Text style={[styles.durationText, { color: colors.textSecondary, fontFamily: fonts.semiBold }]}>
+                {task.duration}
               </Text>
             </View>
-            {task.status === "completed" && (
-              <View style={styles.checkWrapper}>
-                <CheckCircle size={20} color={theme.colors.validated} />
-              </View>
-            )}
+          </View>
+
+          <Text
+            style={[
+              styles.title,
+              { color: colors.text, fontFamily: fonts.semiBold },
+              isCompleted && { textDecorationLine: "line-through", color: colors.textSecondary },
+            ]}
+            numberOfLines={2}
+          >
+            {task.title}
+          </Text>
+
+          <View style={styles.tagsRow}>
+            <View style={[styles.tag, { backgroundColor: task.color + "10" }]}>
+              <View style={[styles.tagDot, { backgroundColor: task.color }]} />
+              <Text style={[styles.tagText, { color: task.color, fontFamily: fonts.bold }]}>
+                {task.category}
+              </Text>
+            </View>
+            <View style={[styles.tag, { backgroundColor: priorityColor + "10" }]}>
+              <View style={[styles.tagDot, { backgroundColor: priorityColor }]} />
+              <Text style={[styles.tagText, { color: priorityColor, fontFamily: fonts.bold }]}>
+                {task.priority}
+              </Text>
+            </View>
+            {task.recurrence && <RecurrenceBadge recurrence={task.recurrence} />}
+            {task.streak && task.streak > 0 ? <StreakIndicator streak={task.streak} /> : null}
           </View>
         </View>
       </TouchableOpacity>
@@ -98,90 +98,84 @@ export function TaskItem({ task, index, onToggle }: TaskItemProps) {
 }
 
 const styles = StyleSheet.create({
-  taskItemContainer: {
-    marginBottom: 35,
-  },
-  taskPressable: {
+  card: {
     flexDirection: "row",
+    marginBottom: 16,
+    gap: 14,
+  },
+  cardCompleted: {
+    opacity: 0.45,
+  },
+  statusCol: {
     alignItems: "center",
+    justifyContent: "center",
+    width: 24,
   },
-  timeColumn: {
-    width: 40,
-    marginRight: 10,
-  },
-  timeText: {
-    fontSize: 12,
-    fontFamily: theme.fonts.urbanistBold,
-    color: theme.colors.onPrimary,
-    textAlign: "right",
-  },
-  markerContainer: {
-    width: 10,
-    height: 20,
+  statusRing: {
+    width: 24,
+    height: 24,
+    borderRadius: 12,
     justifyContent: "center",
     alignItems: "center",
-    marginRight: 15,
-    zIndex: 1,
+    backgroundColor: "transparent",
   },
-  markerSimpleDot: {
-    width: 10,
-    height: 10,
-    borderRadius: 5,
-  },
-  markerDotCompleted: {
-    backgroundColor: theme.colors.validated,
-  },
-  taskContent: {
+  timeLine: {
     flex: 1,
+    width: 2,
+    marginTop: 6,
+    marginBottom: 6,
+    borderRadius: 1,
   },
-  taskContentCompleted: {
-    opacity: 0.5,
-  },
-  taskMainRow: {
-    flexDirection: "row",
-    alignItems: "center",
-    justifyContent: "space-between",
-  },
-  categoryRow: {
-    flexDirection: "row",
-    alignItems: "center",
+  content: {
+    flex: 1,
+    borderRadius: 18,
+    padding: 16,
     gap: 10,
-    marginBottom: 2,
+    shadowColor: "#000",
+    shadowOffset: { width: 0, height: 1 },
+    shadowOpacity: 0.04,
+    shadowRadius: 6,
+    elevation: 1,
   },
-  checkWrapper: {
-    marginLeft: 10,
+  row: {
+    flexDirection: "row",
+    justifyContent: "space-between",
+    alignItems: "center",
   },
-  taskCategory: {
-    fontSize: 10,
-    fontFamily: theme.fonts.urbanistBold,
-    textTransform: "uppercase",
+  time: {
+    fontSize: 14,
   },
-  taskTitle: {
+  durationBadge: {
+    paddingHorizontal: 10,
+    paddingVertical: 3,
+    borderRadius: 20,
+  },
+  durationText: {
+    fontSize: 11,
+  },
+  title: {
     fontSize: 16,
-    fontFamily: theme.fonts.urbanistSemiBold,
-    color: theme.colors.onPrimary,
+    lineHeight: 22,
   },
-  taskTitleCompleted: {
-    textDecorationLine: "line-through",
+  tagsRow: {
+    flexDirection: "row",
+    gap: 8,
   },
-  priorityBadge: {
+  tag: {
     flexDirection: "row",
     alignItems: "center",
-    paddingHorizontal: 6,
-    paddingVertical: 2,
-    borderRadius: 6,
-    gap: 4,
+    paddingHorizontal: 10,
+    paddingVertical: 5,
+    borderRadius: 20,
+    gap: 6,
   },
-  priorityDot: {
-    width: 4,
-    height: 4,
-    borderRadius: 2,
-    backgroundColor: "#FFF",
+  tagDot: {
+    width: 5,
+    height: 5,
+    borderRadius: 3,
   },
-  priorityText: {
-    fontSize: 8,
-    fontFamily: theme.fonts.urbanistBold,
-    color: "#FFF",
-    textTransform: "uppercase",
+  tagText: {
+    fontSize: 11,
+    textTransform: "capitalize",
   },
 });

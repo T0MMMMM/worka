@@ -1,5 +1,5 @@
 import { ChevronRight } from "@/src/components/ui/Icons";
-import { theme } from "@/src/constants/theme";
+import { useTheme } from "@/src/hooks/useTheme";
 import React from "react";
 import { StyleSheet, Text, TouchableOpacity, View } from "react-native";
 
@@ -11,43 +11,50 @@ interface MenuItemProps {
   labelColor?: string;
 }
 
-export function MenuItem({
-  icon,
-  label,
-  onPress,
-  showChevron = true,
-  labelColor,
-}: MenuItemProps) {
+export function MenuItem({ icon, label, onPress, showChevron = true, labelColor }: MenuItemProps) {
+  const { colors, fonts } = useTheme();
+
   return (
-    <TouchableOpacity style={styles.menuItem} onPress={onPress}>
-      <View style={styles.menuItemLeft}>
+    <TouchableOpacity
+      style={[styles.item, { backgroundColor: colors.surface }]}
+      onPress={onPress}
+      activeOpacity={0.7}
+    >
+      <View style={styles.left}>
         {icon}
-        <Text style={[styles.menuText, labelColor && { color: labelColor }]}>
+        <Text
+          style={[
+            styles.label,
+            { fontFamily: fonts.semiBold, color: labelColor ?? colors.text },
+          ]}
+        >
           {label}
         </Text>
       </View>
-      {showChevron && <ChevronRight size={18} color="#CCC" />}
+      {showChevron && <ChevronRight size={18} color={colors.textMuted} />}
     </TouchableOpacity>
   );
 }
 
 const styles = StyleSheet.create({
-  menuItem: {
+  item: {
     flexDirection: "row",
     justifyContent: "space-between",
     alignItems: "center",
-    backgroundColor: "rgba(255, 255, 255, 0.4)",
-    padding: 20,
-    borderRadius: 24,
+    padding: 18,
+    borderRadius: 16,
+    shadowColor: "#000",
+    shadowOffset: { width: 0, height: 2 },
+    shadowOpacity: 0.04,
+    shadowRadius: 8,
+    elevation: 2,
   },
-  menuItemLeft: {
+  left: {
     flexDirection: "row",
     alignItems: "center",
-    gap: 15,
+    gap: 14,
   },
-  menuText: {
-    fontSize: 17,
-    fontFamily: theme.fonts.urbanistSemiBold,
-    color: theme.colors.onPrimary,
+  label: {
+    fontSize: 16,
   },
 });

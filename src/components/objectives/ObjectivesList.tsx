@@ -1,6 +1,7 @@
 import React from "react";
 import { StyleSheet, View } from "react-native";
-import { Objective, ObjectiveItem } from "./ObjectiveItem";
+import { Objective } from "@/src/types/objective";
+import { ObjectiveItem } from "./ObjectiveItem";
 
 interface ObjectivesListProps {
   objectives: Objective[];
@@ -9,7 +10,7 @@ interface ObjectivesListProps {
 
 export function ObjectivesList({ objectives, onUpdateProgress }: ObjectivesListProps) {
   return (
-    <View style={styles.listContainer}>
+    <View style={styles.container}>
       {objectives.map((objective, index) => (
         <ObjectiveItem
           key={objective.id}
@@ -23,7 +24,7 @@ export function ObjectivesList({ objectives, onUpdateProgress }: ObjectivesListP
 }
 
 const styles = StyleSheet.create({
-  listContainer: {
+  container: {
     paddingHorizontal: 20,
   },
 });

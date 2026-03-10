@@ -1,5 +1,5 @@
 import { Plus } from "@/src/components/ui/Icons";
-import { theme } from "@/src/constants/theme";
+import { useTheme } from "@/src/hooks/useTheme";
 import React from "react";
 import { StyleSheet, Text, TouchableOpacity, View } from "react-native";
 
@@ -9,23 +9,19 @@ interface PageHeaderProps {
   showPlus?: boolean;
 }
 
-export function PageHeader({
-  title,
-  onPlusPress,
-  showPlus = true,
-}: PageHeaderProps) {
+export function PageHeader({ title, onPlusPress, showPlus = true }: PageHeaderProps) {
+  const { colors, fonts } = useTheme();
+
   return (
     <View style={styles.header}>
-      <Text style={styles.headerTitle}>{title}</Text>
+      <Text style={[styles.title, { color: colors.text, fontFamily: fonts.bold }]}>{title}</Text>
       {showPlus && onPlusPress && (
         <TouchableOpacity
-          style={styles.plusButtonOuter}
+          style={[styles.plusButton, { backgroundColor: colors.surface }]}
           activeOpacity={0.7}
           onPress={onPlusPress}
         >
-          <View style={styles.plusButtonBlur}>
-            <Plus size={20} color={theme.colors.onPrimary} />
-          </View>
+          <Plus size={20} color={colors.text} />
         </TouchableOpacity>
       )}
     </View>
@@ -37,26 +33,23 @@ const styles = StyleSheet.create({
     flexDirection: "row",
     justifyContent: "space-between",
     alignItems: "center",
-    paddingHorizontal: 30,
+    paddingHorizontal: 20,
     paddingTop: 15,
     paddingBottom: 10,
   },
-  headerTitle: {
-    fontSize: 26,
-    fontFamily: theme.fonts.urbanistBold,
-    textTransform: "capitalize",
-    color: theme.colors.onPrimary,
+  title: {
+    fontSize: 28,
   },
-  plusButtonOuter: {
-    borderRadius: 100,
-    width: 38,
-    height: 38,
-    overflow: "hidden",
-  },
-  plusButtonBlur: {
-    flex: 1,
+  plusButton: {
+    width: 40,
+    height: 40,
+    borderRadius: 20,
     justifyContent: "center",
     alignItems: "center",
-    backgroundColor: "rgba(255, 255, 255, 0.4)",
+    shadowColor: "#000",
+    shadowOffset: { width: 0, height: 2 },
+    shadowOpacity: 0.06,
+    shadowRadius: 8,
+    elevation: 2,
   },
 });

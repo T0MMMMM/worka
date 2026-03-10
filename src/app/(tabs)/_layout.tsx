@@ -1,13 +1,16 @@
 import { Checklist, Sparkle, UserCircle } from "@/src/components/ui/Icons";
+import { useTheme } from "@/src/hooks/useTheme";
 import { Tabs } from "expo-router";
 
-export default function RootLayout() {
+export default function TabLayout() {
+  const { colors } = useTheme();
+
   return (
     <Tabs
       screenOptions={{
         headerShown: false,
-        tabBarActiveTintColor: "black",
-        tabBarInactiveTintColor: "gray",
+        tabBarActiveTintColor: colors.accent,
+        tabBarInactiveTintColor: colors.textMuted,
         tabBarShowLabel: false,
         tabBarStyle: {
           backgroundColor: "transparent",
@@ -22,22 +25,15 @@ export default function RootLayout() {
     >
       <Tabs.Screen
         name="objectives"
-        options={{
-          tabBarIcon: ({ color }) => <Sparkle color={color} />,
-        }}
+        options={{ tabBarIcon: ({ color }) => <Sparkle color={color} /> }}
       />
-
       <Tabs.Screen
         name="planning"
-        options={{
-          tabBarIcon: ({ color }) => <Checklist color={color} />,
-        }}
+        options={{ tabBarIcon: ({ color }) => <Checklist color={color} /> }}
       />
       <Tabs.Screen
         name="profile"
-        options={{
-          tabBarIcon: ({ color }) => <UserCircle color={color} />,
-        }}
+        options={{ tabBarIcon: ({ color }) => <UserCircle color={color} /> }}
       />
     </Tabs>
   );

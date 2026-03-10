@@ -1,88 +1,52 @@
-import Model3D from "@/src/components/utils/Model3D";
 import { theme } from "@/src/constants/theme";
-import { OrbitControls } from "@react-three/drei/native";
-import { Canvas } from "@react-three/fiber/native";
-import { LinearGradient } from "expo-linear-gradient";
 import { useRouter } from "expo-router";
 import { MotiView } from "moti";
-import React, { Suspense } from "react";
-import {
-  StyleSheet,
-  Text,
-  TouchableOpacity,
-  View,
-} from "react-native";
+import React from "react";
+import { StyleSheet, Text, TouchableOpacity, View } from "react-native";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
 
 export default function WelcomePage() {
   const router = useRouter();
   const insets = useSafeAreaInsets();
 
-  const logoModel = {
-    name: "Logo",
-    link: require("@/src/public/models/logo-icon.glb"),
-    scale: 2.2,
-    rotation: [0, 0, -Math.PI / 24],
-    position: [0, 5, 0],
-    relativePosition: [0, -1, 0],
-  };
-
   return (
     <View style={styles.container}>
-      <LinearGradient
-        colors={[theme.colors.softCream, "#FFFFFF", theme.colors.softPink]}
-        locations={[0, 0.5, 1]}
-        style={styles.gradient}
+      <View style={styles.glow1} />
+      <View style={styles.glow2} />
+
+      <MotiView
+        from={{ opacity: 0 }}
+        animate={{ opacity: 1 }}
+        transition={{ type: "timing", duration: 500 }}
+        style={[styles.content, { paddingTop: insets.top + 60 }]}
       >
-        <MotiView
-          from={{ opacity: 0, translateY: 20 }}
-          animate={{ opacity: 1, translateY: 0 }}
-          transition={{ type: "timing", duration: 1000 }}
-          style={styles.contentContainer}
+        <Text style={styles.subtitle}>Bienvenue sur</Text>
+        <Text style={styles.title}>Worka</Text>
+        <Text style={styles.tagline}>
+          Planifiez votre journée,{"\n"}accomplissez vos objectifs.
+        </Text>
+      </MotiView>
+
+      <MotiView
+        from={{ opacity: 0, translateY: 20 }}
+        animate={{ opacity: 1, translateY: 0 }}
+        transition={{ type: "timing", duration: 400, delay: 300 }}
+        style={[styles.footer, { paddingBottom: insets.bottom + 40 }]}
+      >
+        <TouchableOpacity
+          style={styles.button}
+          activeOpacity={0.8}
+          onPress={() => router.replace("/(tabs)/planning")}
         >
-          {/* Header */}
-          <View style={[styles.header, { marginTop: insets.top + 20 }]}>
-            <Text style={styles.welcomeText}>Bienvenue sur</Text>
-            <Text style={styles.appName}>Worka</Text>
-          </View>
+          <Text style={styles.buttonText}>Commencer</Text>
+        </TouchableOpacity>
 
-          {/* 3D Model Area */}
-          <View style={styles.modelWrapper}>
-            <Canvas>
-              <ambientLight intensity={1.5} />
-              <pointLight position={[5, 5, 5]} intensity={1.5} />
-              <pointLight position={[-5, -5, -5]} intensity={0.5} />
-              <Suspense fallback={null}>
-                <Model3D model={logoModel} />
-              </Suspense>
-              <OrbitControls
-                enableZoom={false}
-                enablePan={false}
-                enableDamping={true}
-                dampingFactor={0.05}
-                rotateSpeed={2}
-                autoRotate={true}
-                autoRotateSpeed={3}
-              />
-            </Canvas>
-          </View>
-
-          {/* Footer content */}
-          <View style={[styles.footer, { paddingBottom: insets.bottom + 40 }]}>
-            <Text style={styles.tagline}>
-              Planifiez votre journée, {"\n"}atteignez vos objectifs.
-            </Text>
-
-            <TouchableOpacity
-              style={styles.button}
-              activeOpacity={0.8}
-              onPress={() => router.replace("/planning")}
-            >
-              <Text style={styles.buttonText}>Commencer</Text>
-            </TouchableOpacity>
-          </View>
-        </MotiView>
-      </LinearGradient>
+        <TouchableOpacity activeOpacity={0.7} onPress={() => router.push("/(auth)/login")}>
+          <Text style={styles.linkText}>
+            Déjà un compte ? <Text style={styles.linkAccent}>Se connecter</Text>
+          </Text>
+        </TouchableOpacity>
+      </MotiView>
     </View>
   );
 }
@@ -90,62 +54,74 @@ export default function WelcomePage() {
 const styles = StyleSheet.create({
   container: {
     flex: 1,
+    backgroundColor: theme.colors.bg,
   },
-  gradient: {
+  glow1: {
+    position: "absolute",
+    width: 300,
+    height: 300,
+    borderRadius: 150,
+    backgroundColor: "rgba(123,97,255,0.06)",
+    top: -80,
+    right: -80,
+  },
+  glow2: {
+    position: "absolute",
+    width: 250,
+    height: 250,
+    borderRadius: 125,
+    backgroundColor: "rgba(123,97,255,0.04)",
+    bottom: 100,
+    left: -80,
+  },
+  content: {
     flex: 1,
-  },
-  contentContainer: {
-    flex: 1,
-    justifyContent: "space-between",
-  },
-  header: {
-    alignItems: "center",
-    paddingHorizontal: 20,
-  },
-  welcomeText: {
-    fontSize: 24,
-    fontFamily: theme.fonts.urbanist,
-    color: theme.colors.textSecondary,
-    marginBottom: -5,
-  },
-  appName: {
-    fontSize: 64,
-    fontFamily: theme.fonts.urbanistBold,
-    color: theme.colors.text,
-    letterSpacing: -2,
-  },
-  modelWrapper: {
-    height: "45%",
-    width: "100%",
-  },
-  footer: {
-    alignItems: "center",
     paddingHorizontal: 30,
-    gap: 30,
+  },
+  subtitle: {
+    fontSize: 18,
+    fontFamily: theme.fonts.regular,
+    color: theme.colors.textSecondary,
+    marginBottom: 4,
+  },
+  title: {
+    fontSize: 72,
+    fontFamily: theme.fonts.extraBold,
+    color: theme.colors.text,
+    letterSpacing: -3,
   },
   tagline: {
-    fontSize: 18,
-    fontFamily: theme.fonts.urbanistMedium,
+    fontSize: 17,
+    fontFamily: theme.fonts.regular,
     color: theme.colors.textSecondary,
-    textAlign: "center",
     lineHeight: 26,
+    marginTop: 20,
+  },
+  footer: {
+    paddingHorizontal: 30,
+    alignItems: "center",
+    gap: 20,
   },
   button: {
     width: "100%",
-    height: 60,
-    backgroundColor: theme.colors.text,
-    borderRadius: 30,
+    height: 58,
+    backgroundColor: theme.colors.accent,
+    borderRadius: 16,
     alignItems: "center",
     justifyContent: "center",
-    shadowColor: theme.colors.text,
-    shadowOffset: { width: 0, height: 4 },
-    shadowOpacity: 0.2,
-    shadowRadius: 10,
-    elevation: 5,
   },
   buttonText: {
     color: "#FFFFFF",
-    fontSize: 18,
-    fontFamily: theme.fonts.urbanistBold,
+    fontSize: 17,
+    fontFamily: theme.fonts.bold,
+  },
+  linkText: {
+    fontSize: 15,
+    fontFamily: theme.fonts.regular,
+    color: theme.colors.textSecondary,
+  },
+  linkAccent: {
+    color: theme.colors.accent,
+    fontFamily: theme.fonts.semiBold,
   },
 });

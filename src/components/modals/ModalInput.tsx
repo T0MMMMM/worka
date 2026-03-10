@@ -1,41 +1,52 @@
-import { theme } from "@/src/constants/theme";
+import { useTheme } from "@/src/hooks/useTheme";
 import React from "react";
 import { StyleSheet, Text, TextInput, TextInputProps, View } from "react-native";
 
 interface ModalInputProps extends TextInputProps {
-    label: string;
+  label: string;
 }
 
 export function ModalInput({ label, style, ...props }: ModalInputProps) {
-    return (
-        <View style={styles.container}>
-            <Text style={styles.label}>{label}</Text>
-            <TextInput
-                style={[styles.input, style]}
-                placeholderTextColor="#999"
-                {...props}
-            />
-        </View>
-    );
+  const { colors, fonts } = useTheme();
+
+  return (
+    <View style={styles.container}>
+      <Text style={[styles.label, { color: colors.textSecondary, fontFamily: fonts.bold }]}>
+        {label}
+      </Text>
+      <TextInput
+        style={[
+          styles.input,
+          {
+            backgroundColor: colors.bg,
+            color: colors.text,
+            borderColor: colors.border,
+            fontFamily: fonts.regular,
+          },
+          style,
+        ]}
+        placeholderTextColor={colors.textMuted}
+        {...props}
+      />
+    </View>
+  );
 }
 
 const styles = StyleSheet.create({
-    container: {
-        marginBottom: 20,
-    },
-    label: {
-        fontSize: 14,
-        fontFamily: theme.fonts.urbanistBold,
-        color: theme.colors.textSecondary,
-        marginBottom: 8,
-    },
-    input: {
-        fontSize: 17,
-        fontFamily: theme.fonts.urbanistSemiBold,
-        backgroundColor: "#F2F2F7",
-        borderRadius: 12,
-        paddingHorizontal: 16,
-        paddingVertical: 14,
-        color: theme.colors.text,
-    },
+  container: {
+    marginBottom: 24,
+  },
+  label: {
+    fontSize: 13,
+    textTransform: "uppercase",
+    letterSpacing: 0.5,
+    marginBottom: 10,
+  },
+  input: {
+    fontSize: 16,
+    borderRadius: 16,
+    paddingHorizontal: 18,
+    paddingVertical: 16,
+    borderWidth: 1,
+  },
 });

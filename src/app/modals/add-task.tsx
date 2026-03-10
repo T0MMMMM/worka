@@ -1,4 +1,9 @@
-import { ModalFooter, ModalHeader, ModalInput, ModalSection } from "@/src/components/modals";
+import {
+  ModalFooter,
+  ModalHeader,
+  ModalInput,
+  ModalSection,
+} from "@/src/components/modals";
 import {
   Briefcase,
   Checklist,
@@ -8,7 +13,9 @@ import {
   Palette,
   User,
 } from "@/src/components/ui/Icons";
-import { theme } from "@/src/constants/theme";
+import { useTheme } from "@/src/hooks/useTheme";
+import { useTaskStore } from "@/src/store/taskStore";
+import { RecurrenceRule } from "@/src/types/task";
 import { useRouter } from "expo-router";
 import moment from "moment";
 import React, { useState } from "react";
@@ -27,41 +34,33 @@ import DateTimePickerModal from "react-native-modal-datetime-picker";
 const CATEGORIES = [
   { label: "Travail", color: "#FF5722", icon: Briefcase },
   { label: "Design", color: "#2196F3", icon: Palette },
-  { label: "Perso", color: "#4CAF50", icon: User },
+  { label: "Perso", color: "#22C55E", icon: User },
   { label: "Sport", color: "#9C27B0", icon: Dumbbell },
 ];
 
 const PRIORITIES = [
-  { label: "Low", color: "#4CAF50", value: "low" },
-  { label: "Medium", color: "#FFB142", value: "medium" },
-  { label: "High", color: "#FF5252", value: "high" },
+  { label: "Low", color: "#22C55E", value: "low" },
+  { label: "Medium", color: "#F59E0B", value: "medium" },
+  { label: "High", color: "#EF4444", value: "high" },
+];
+
+const RECURRENCE_OPTIONS: { label: string; value: RecurrenceRule["frequency"] | null }[] = [
+  { label: "Aucune", value: null },
+  { label: "Quotidien", value: "daily" },
+  { label: "Hebdo", value: "weekly" },
+  { label: "Mensuel", value: "monthly" },
 ];
 
 export default function AddTaskModal() {
   const router = useRouter();
+  const { colors, fonts } = useTheme();
   const { height: SCREEN_HEIGHT } = useWindowDimensions();
   const [title, setTitle] = useState("");
   const [date, setDate] = useState(new Date());
   const [isTimePickerVisible, setTimePickerVisibility] = useState(false);
   const [selectedCategory, setSelectedCategory] = useState(CATEGORIES[1]);
   const [selectedPriority, setSelectedPriority] = useState(PRIORITIES[1]);
-
-  const handleAdd = () => {
-    router.back();
-  };
-
-  const showTimePicker = () => {
-    setTimePickerVisibility(true);
-  };
-
-  const hideTimePicker = () => {
-    setTimePickerVisibility(false);
-  };
-
-  const handleConfirmTime = (selectedDate: Date) => {
-    setDate(selectedDate);
-    hideTimePicker();
-  };
+  const [selectedRecurrence, setSelectedRecurrence] = useState(RECURRENCE_OPTIONS[0]);
 
   return (
     <View style={styles.container}>
@@ -71,14 +70,13 @@ export default function AddTaskModal() {
         onPress={() => router.back()}
       />
 
-      <View style={[styles.modalContent, { maxHeight: SCREEN_HEIGHT * 0.95 }]}>
-        <View style={styles.modalHandle} />
-
-        <View style={styles.contentContainer}>
+      <View style={[styles.modal, { maxHeight: SCREEN_HEIGHT * 0.95, backgroundColor: colors.surface }]}>
+        <View style={[styles.handle, { backgroundColor: colors.textMuted }]} />
+        <View style={styles.content}>
           <ModalHeader
             title="Nouvelle tâche"
             onClose={() => router.back()}
-            icon={<Checklist size={24} color={theme.colors.text} />}
+            icon={<Checklist size={20} color={colors.accent} />}
           />
 
           <KeyboardAvoidingView
@@ -96,12 +94,14 @@ export default function AddTaskModal() {
 
               <ModalSection label="Horaire">
                 <TouchableOpacity
-                  style={styles.dateSelector}
-                  onPress={showTimePicker}
+                  style={[styles.selector, { backgroundColor: colors.bg, borderColor: colors.border }]}
+                  onPress={() => setTimePickerVisibility(true)}
                   activeOpacity={0.7}
                 >
-                  <Clock size={20} color={theme.colors.systemBlue} />
-                  <Text style={styles.dateText}>
+                  <View style={[styles.selectorIcon, { backgroundColor: colors.accentSoft }]}>
+                    <Clock size={18} color={colors.accent} />
+                  </View>
+                  <Text style={[styles.selectorText, { color: colors.text, fontFamily: fonts.bold }]}>
                     {moment(date).format("HH:mm")}
                   </Text>
                 </TouchableOpacity>
@@ -110,25 +110,22 @@ export default function AddTaskModal() {
               <ModalSection label="Priorité">
                 <View style={styles.row}>
                   {PRIORITIES.map((p) => {
-                    const isSelected = selectedPriority.value === p.value;
+                    const active = selectedPriority.value === p.value;
                     return (
                       <TouchableOpacity
                         key={p.value}
                         onPress={() => setSelectedPriority(p)}
                         style={[
                           styles.pill,
-                          isSelected && { backgroundColor: p.color + "20", borderColor: p.color },
-                          !isSelected && { borderColor: theme.colors.separator },
+                          { borderColor: colors.border },
+                          active && { backgroundColor: p.color + "12", borderColor: p.color },
                         ]}
                       >
-                        <Flag
-                          size={16}
-                          color={isSelected ? p.color : theme.colors.textSecondary}
-                        />
+                        <Flag size={14} color={active ? p.color : colors.textMuted} />
                         <Text
                           style={[
                             styles.pillText,
-                            { color: isSelected ? p.color : theme.colors.textSecondary },
+                            { color: active ? p.color : colors.textSecondary, fontFamily: fonts.bold },
                           ]}
                         >
                           {p.label}
@@ -142,31 +139,24 @@ export default function AddTaskModal() {
               <ModalSection label="Catégorie">
                 <View style={styles.grid}>
                   {CATEGORIES.map((cat) => {
-                    const IconComponent = cat.icon;
-                    const isSelected = selectedCategory.label === cat.label;
+                    const Icon = cat.icon;
+                    const active = selectedCategory.label === cat.label;
                     return (
                       <TouchableOpacity
                         key={cat.label}
                         onPress={() => setSelectedCategory(cat)}
                         style={[
-                          styles.categoryCard,
-                          isSelected && {
-                            backgroundColor: cat.color,
-                            borderColor: cat.color,
-                          },
-                          !isSelected && {
-                            borderColor: theme.colors.separator,
-                          }
+                          styles.catCard,
+                          active
+                            ? { backgroundColor: cat.color, borderColor: cat.color }
+                            : { borderColor: colors.border },
                         ]}
                       >
-                        <IconComponent
-                          size={20}
-                          color={isSelected ? "#FFF" : cat.color}
-                        />
+                        <Icon size={18} color={active ? "#FFF" : cat.color} />
                         <Text
                           style={[
-                            styles.categoryText,
-                            isSelected ? { color: "#FFF" } : { color: theme.colors.text },
+                            styles.catText,
+                            { color: active ? "#FFF" : colors.text, fontFamily: fonts.bold },
                           ]}
                         >
                           {cat.label}
@@ -177,18 +167,64 @@ export default function AddTaskModal() {
                 </View>
               </ModalSection>
 
+              <ModalSection label="Récurrence">
+                <View style={styles.row}>
+                  {RECURRENCE_OPTIONS.map((r) => {
+                    const active = selectedRecurrence.value === r.value;
+                    return (
+                      <TouchableOpacity
+                        key={r.label}
+                        onPress={() => setSelectedRecurrence(r)}
+                        style={[
+                          styles.pill,
+                          { borderColor: colors.border },
+                          active && { backgroundColor: colors.accentSoft, borderColor: colors.accent },
+                        ]}
+                      >
+                        <Text
+                          style={[
+                            styles.pillText,
+                            { color: active ? colors.accent : colors.textSecondary, fontFamily: fonts.bold },
+                          ]}
+                        >
+                          {r.label}
+                        </Text>
+                      </TouchableOpacity>
+                    );
+                  })}
+                </View>
+              </ModalSection>
             </ScrollView>
           </KeyboardAvoidingView>
 
-          <ModalFooter label="Ajouter la tâche" onPress={handleAdd} />
+          <ModalFooter label="Ajouter la tâche" onPress={() => {
+            if (!title.trim()) return;
+            useTaskStore.getState().addTask({
+              title: title.trim(),
+              time: moment(date).format("HH:mm"),
+              duration: "1h",
+              status: "pending",
+              category: selectedCategory.label,
+              color: selectedCategory.color,
+              priority: selectedPriority.value as "low" | "medium" | "high",
+              ...(selectedRecurrence.value && {
+                recurrence: {
+                  frequency: selectedRecurrence.value,
+                  interval: 1,
+                },
+                streak: 0,
+              }),
+            });
+            router.back();
+          }} />
         </View>
       </View>
 
       <DateTimePickerModal
         isVisible={isTimePickerVisible}
         mode="time"
-        onConfirm={handleConfirmTime}
-        onCancel={hideTimePicker}
+        onConfirm={(d) => { setDate(d); setTimePickerVisibility(false); }}
+        onCancel={() => setTimePickerVisibility(false)}
         locale="fr_FR"
         confirmTextIOS="Confirmer"
         cancelTextIOS="Annuler"
@@ -202,49 +238,51 @@ const styles = StyleSheet.create({
   container: {
     flex: 1,
     justifyContent: "flex-end",
-    backgroundColor: "rgba(0,0,0,0.4)",
+    backgroundColor: "rgba(0,0,0,0.35)",
   },
   backdrop: {
     ...StyleSheet.absoluteFillObject,
   },
-  modalContent: {
-    backgroundColor: theme.colors.card,
+  modal: {
     borderTopLeftRadius: 32,
     borderTopRightRadius: 32,
-    shadowColor: "#000",
-    shadowOffset: { width: 0, height: -5 },
-    shadowOpacity: 0.1,
-    shadowRadius: 20,
-    elevation: 10,
     flex: 1,
-    paddingBottom: 0,
+    shadowColor: "#000",
+    shadowOffset: { width: 0, height: -8 },
+    shadowOpacity: 0.08,
+    shadowRadius: 24,
+    elevation: 10,
   },
-  modalHandle: {
+  handle: {
     width: 40,
     height: 5,
-    backgroundColor: "#E0E0E0",
     borderRadius: 3,
     alignSelf: "center",
-    marginTop: 12,
-    marginBottom: 8,
+    marginTop: 10,
+    marginBottom: 6,
   },
-  contentContainer: {
+  content: {
     flex: 1,
     paddingHorizontal: 24,
-    paddingTop: 10,
+    paddingTop: 14,
   },
-  dateSelector: {
+  selector: {
     flexDirection: "row",
     alignItems: "center",
-    backgroundColor: theme.colors.background,
-    borderRadius: 12,
+    borderRadius: 16,
     padding: 16,
     gap: 12,
+    borderWidth: 1,
   },
-  dateText: {
-    fontSize: 17,
-    fontFamily: theme.fonts.urbanistSemiBold,
-    color: theme.colors.text,
+  selectorIcon: {
+    width: 34,
+    height: 34,
+    borderRadius: 12,
+    justifyContent: "center",
+    alignItems: "center",
+  },
+  selectorText: {
+    fontSize: 18,
   },
   row: {
     flexDirection: "row",
@@ -255,33 +293,29 @@ const styles = StyleSheet.create({
     flexDirection: "row",
     alignItems: "center",
     justifyContent: "center",
-    paddingVertical: 12,
-    borderRadius: 12,
-    borderWidth: 1,
+    paddingVertical: 14,
+    borderRadius: 14,
+    borderWidth: 1.5,
     gap: 6,
-    backgroundColor: theme.colors.background,
   },
   pillText: {
-    fontSize: 14,
-    fontFamily: theme.fonts.urbanistSemiBold,
+    fontSize: 13,
   },
   grid: {
     flexDirection: "row",
     flexWrap: "wrap",
     gap: 10,
   },
-  categoryCard: {
-    width: "48%",
+  catCard: {
+    width: "47%",
     flexDirection: "row",
     alignItems: "center",
     padding: 16,
     borderRadius: 16,
-    borderWidth: 1,
+    borderWidth: 1.5,
     gap: 10,
-    backgroundColor: theme.colors.background,
   },
-  categoryText: {
-    fontSize: 15,
-    fontFamily: theme.fonts.urbanistBold,
+  catText: {
+    fontSize: 14,
   },
 });

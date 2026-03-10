@@ -1,4 +1,5 @@
-import { LogOut, Settings } from "@/src/components/ui/Icons";
+import { Clock, LogOut, Settings } from "@/src/components/ui/Icons";
+import { useTheme } from "@/src/hooks/useTheme";
 import React from "react";
 import { StyleSheet, View } from "react-native";
 import { MenuItem } from "./MenuItem";
@@ -6,37 +7,39 @@ import { MenuItem } from "./MenuItem";
 interface MenuContainerProps {
   onSettingsPress?: () => void;
   onLogoutPress?: () => void;
+  onArchivePress?: () => void;
 }
 
-export function MenuContainer({
-  onSettingsPress,
-  onLogoutPress,
-}: MenuContainerProps) {
+export function MenuContainer({ onSettingsPress, onLogoutPress, onArchivePress }: MenuContainerProps) {
+  const { colors } = useTheme();
+
   return (
-    <View style={styles.menuContainer}>
+    <View style={styles.container}>
       <MenuItem
-        icon={<Settings size={20} color="#666" />}
+        icon={<Clock size={20} color={colors.textSecondary} />}
+        label="Archives"
+        onPress={onArchivePress}
+      />
+      <MenuItem
+        icon={<Settings size={20} color={colors.textSecondary} />}
         label="Paramètres"
         onPress={onSettingsPress}
       />
-      <View style={styles.menuSpacer} />
       <MenuItem
-        icon={<LogOut size={20} color="#FF6B6B" />}
+        icon={<LogOut size={20} color={colors.danger} />}
         label="Déconnexion"
         onPress={onLogoutPress}
         showChevron={false}
-        labelColor="#FF6B6B"
+        labelColor={colors.danger}
       />
     </View>
   );
 }
 
 const styles = StyleSheet.create({
-  menuContainer: {
-    marginTop: 20,
-    paddingHorizontal: 30,
-  },
-  menuSpacer: {
-    height: 10,
+  container: {
+    marginTop: 24,
+    paddingHorizontal: 20,
+    gap: 10,
   },
 });

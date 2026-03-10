@@ -1,4 +1,4 @@
-import { theme } from "@/src/constants/theme";
+import { useTheme } from "@/src/hooks/useTheme";
 import { MotiView } from "moti";
 import React from "react";
 import { StyleSheet, Text, View } from "react-native";
@@ -11,58 +11,50 @@ interface StatItemProps {
   delay?: number;
 }
 
-export function StatItem({
-  icon,
-  label,
-  value,
-  backgroundColor,
-  delay = 300,
-}: StatItemProps) {
+export function StatItem({ icon, label, value, backgroundColor, delay = 200 }: StatItemProps) {
+  const { colors, fonts } = useTheme();
+
   return (
     <MotiView
-      from={{ opacity: 0, translateX: -20 }}
-      animate={{ opacity: 1, translateX: 0 }}
-      transition={{ delay }}
-      style={styles.statItem}
+      from={{ opacity: 0, translateY: 8 }}
+      animate={{ opacity: 1, translateY: 0 }}
+      transition={{ type: "timing", duration: 350, delay }}
+      style={[styles.card, { backgroundColor: colors.surface }]}
     >
-      <View style={[styles.markerContainer, { backgroundColor }]}>{icon}</View>
-      <View style={styles.statContent}>
-        <Text style={styles.statLabel}>{label}</Text>
-        <Text style={styles.statValue}>{value}</Text>
-      </View>
+      <View style={[styles.iconContainer, { backgroundColor }]}>{icon}</View>
+      <Text style={[styles.value, { fontFamily: fonts.bold, color: colors.text }]}>{value}</Text>
+      <Text style={[styles.label, { fontFamily: fonts.semiBold, color: colors.textSecondary }]}>
+        {label}
+      </Text>
     </MotiView>
   );
 }
 
 const styles = StyleSheet.create({
-  statItem: {
-    flexDirection: "row",
-    alignItems: "center",
-    marginBottom: 35,
-  },
-  markerContainer: {
-    width: 32,
-    height: 32,
+  card: {
+    flex: 1,
     borderRadius: 16,
+    padding: 16,
+    alignItems: "center",
+    gap: 8,
+    shadowColor: "#000",
+    shadowOffset: { width: 0, height: 2 },
+    shadowOpacity: 0.04,
+    shadowRadius: 8,
+    elevation: 2,
+  },
+  iconContainer: {
+    width: 36,
+    height: 36,
+    borderRadius: 12,
     justifyContent: "center",
     alignItems: "center",
-    marginRight: 20,
-    zIndex: 1,
-    borderWidth: 2,
-    borderColor: "#FFF",
   },
-  statContent: {
-    flex: 1,
+  value: {
+    fontSize: 22,
   },
-  statLabel: {
-    fontSize: 13,
-    fontFamily: theme.fonts.urbanistBold,
-    color: "#AAA",
-    textTransform: "uppercase",
-  },
-  statValue: {
-    fontSize: 20,
-    fontFamily: theme.fonts.urbanistBold,
-    color: theme.colors.onPrimary,
+  label: {
+    fontSize: 11,
+    textAlign: "center",
   },
 });
