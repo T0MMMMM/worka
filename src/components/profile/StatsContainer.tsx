@@ -1,4 +1,4 @@
-import { Checklist, Sparkle, Target } from "@/src/components/ui/Icons";
+import { Dashboard, Sparkle, Target } from "@/src/components/ui/Icons";
 import { useTheme } from "@/src/hooks/useTheme";
 import React from "react";
 import { StyleSheet, View } from "react-native";
@@ -14,7 +14,7 @@ export function StatsContainer({ stats }: StatsContainerProps) {
   return (
     <View style={styles.container}>
       <StatItem
-        icon={<Checklist size={18} color={colors.danger} />}
+        icon={<Dashboard size={18} color={colors.danger} />}
         label="Tâches"
         value={stats.tasksCompleted.toString()}
         backgroundColor={colors.dangerSoft}

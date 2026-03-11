@@ -1,7 +1,5 @@
-import { Objective } from "@/src/types/objective";
-import { CheckCircle } from "@/src/components/ui/Icons";
-import { ProgressRing } from "@/src/components/ui/ProgressRing";
 import { useTheme } from "@/src/hooks/useTheme";
+import { Objective } from "@/src/types/objective";
 import { MotiView } from "moti";
 import React from "react";
 import { Dimensions, StyleSheet, Text, View } from "react-native";
@@ -12,6 +10,7 @@ import Animated, {
   withSpring,
   withTiming,
 } from "react-native-reanimated";
+import Svg, { Path } from "react-native-svg";
 
 interface ObjectiveItemProps {
   objective: Objective;
@@ -20,10 +19,28 @@ interface ObjectiveItemProps {
 }
 
 const SCREEN_WIDTH = Dimensions.get("window").width;
-const DRAG_AREA_WIDTH = SCREEN_WIDTH - 40 - 32;
+const CARD_GAP = 2;
+const H_PADDING = 2;
+const CARD_WIDTH = (SCREEN_WIDTH - H_PADDING * 2 - CARD_GAP) / 2;
+const CARD_HEIGHT = CARD_WIDTH;
+
+// Diagonal arrow icon
+const ArrowUpRight = ({ color = "#1C1C1E", size = 16 }) => (
+  <Svg width={size} height={size} viewBox="0 0 24 24" fill="none">
+    <Path
+      d="M7 17L17 7M17 7H7M17 7V17"
+      stroke={color}
+      strokeWidth="2"
+      strokeLinecap="round"
+      strokeLinejoin="round"
+    />
+  </Svg>
+);
+
+const DRAG_AREA = CARD_WIDTH - 32;
 
 export function ObjectiveItem({ objective, index, onUpdateProgress }: ObjectiveItemProps) {
-  const { colors, fonts } = useTheme();
+  const { fonts } = useTheme();
   const progress = useSharedValue(objective.progress);
   const isCompleted = useSharedValue(objective.completed);
 
@@ -35,8 +52,7 @@ export function ObjectiveItem({ objective, index, onUpdateProgress }: ObjectiveI
   const pan = Gesture.Pan()
     .onChange((event) => {
       if (isCompleted.value) return;
-      let next = progress.value + event.changeX / DRAG_AREA_WIDTH;
-      progress.value = Math.max(0, Math.min(1, next));
+      progress.value = Math.max(0, Math.min(1, progress.value + event.changeX / DRAG_AREA));
     })
     .onEnd(() => {
       const done = progress.value >= 0.99;
@@ -45,75 +61,44 @@ export function ObjectiveItem({ objective, index, onUpdateProgress }: ObjectiveI
     });
 
   const isUrgent = objective.daysLeft <= 7;
+  const pct = Math.round(objective.progress * 100);
 
   return (
     <MotiView
-      from={{ opacity: 0, translateY: 8 }}
-      animate={{ opacity: 1, translateY: 0 }}
-      transition={{ type: "timing", duration: 350, delay: index * 50 }}
-      style={[styles.card, { backgroundColor: colors.surface }, objective.completed && styles.cardCompleted]}
+      from={{ opacity: 0, scale: 0.92 }}
+      animate={{ opacity: 1, scale: 1 }}
+      transition={{ type: "spring", delay: index * 70, damping: 18, stiffness: 180 }}
+      style={[
+        styles.card,
+        { backgroundColor: objective.color || "#E8E4F4" },
+        objective.completed && styles.cardDone,
+      ]}
     >
-      {/* Top row */}
-      <View style={styles.topRow}>
-        <View style={styles.titleRow}>
-          <View style={[styles.accentDot, { backgroundColor: objective.accent }]} />
-          <Text
-            style={[
-              styles.title,
-              { color: colors.text, fontFamily: fonts.semiBold },
-              objective.completed && { textDecorationLine: "line-through", color: colors.textSecondary },
-            ]}
-            numberOfLines={1}
-          >
-            {objective.title}
-          </Text>
-        </View>
-        <View style={[styles.daysBadge, { backgroundColor: isUrgent ? colors.warningSoft : colors.elevated }]}>
-          <Text style={[styles.daysText, { color: isUrgent ? colors.warning : colors.textSecondary, fontFamily: fonts.bold }]}>
-            {objective.daysLeft}j
-          </Text>
-        </View>
-      </View>
+      {/* Title */}
+      <Text
+        style={[styles.title, { fontFamily: fonts.bold }]}
+        numberOfLines={3}
+      >
+        {objective.title}
+      </Text>
 
-      {/* Progress Ring */}
-      <GestureDetector gesture={pan}>
-        <Animated.View style={styles.ringContainer}>
-          <ProgressRing
-            size={100}
-            strokeWidth={8}
-            progress={progress}
-            color={objective.accent}
-            bgColor={colors.elevated}
-          >
-            {objective.completed ? (
-              <CheckCircle size={24} color={colors.success} />
-            ) : (
-              <Text style={[styles.ringPercent, { color: objective.accent, fontFamily: fonts.bold }]}>
-                {Math.round(objective.progress * 100)}%
-              </Text>
-            )}
-          </ProgressRing>
-        </Animated.View>
-      </GestureDetector>
+      {/* Emoji illustration */}
+      {objective.image ? (
+        <Text style={styles.emoji}>{objective.image}</Text>
+      ) : null}
 
-      {/* Bottom row */}
-      <View style={styles.bottomRow}>
-        {objective.completed ? (
-          <View style={styles.completedRow}>
-            <CheckCircle size={14} color={colors.success} />
-            <Text style={[styles.completedText, { color: colors.success, fontFamily: fonts.semiBold }]}>
-              Terminé
+      {/* Bottom row: progress % + arrow button */}
+      <View style={styles.bottom}>
+        <GestureDetector gesture={pan}>
+          <Animated.View>
+            <Text style={[styles.pct, { fontFamily: fonts.bold }]}>
+              {pct}%
             </Text>
-          </View>
-        ) : (
-          <Text style={[styles.progressText, { color: colors.text, fontFamily: fonts.bold }]}>
-            {Math.round(objective.progress * 100)}%
-          </Text>
-        )}
-        <View style={[styles.progressLabel, { backgroundColor: objective.accent + "10" }]}>
-          <Text style={[styles.progressLabelText, { color: objective.accent, fontFamily: fonts.semiBold }]}>
-            {objective.completed ? "100%" : `${Math.round(objective.progress * 100)}% complété`}
-          </Text>
+          </Animated.View>
+        </GestureDetector>
+
+        <View style={[styles.arrowBtn, { backgroundColor: "rgba(255,255,255,0.65)" }]}>
+          <ArrowUpRight color="#1C1C1E" size={20} />
         </View>
       </View>
     </MotiView>
@@ -122,78 +107,59 @@ export function ObjectiveItem({ objective, index, onUpdateProgress }: ObjectiveI
 
 const styles = StyleSheet.create({
   card: {
-    borderRadius: 20,
-    padding: 18,
-    marginBottom: 14,
-    shadowColor: "#000",
-    shadowOffset: { width: 0, height: 2 },
-    shadowOpacity: 0.05,
-    shadowRadius: 10,
-    elevation: 2,
-  },
-  cardCompleted: {
-    opacity: 0.45,
-  },
-  topRow: {
-    flexDirection: "row",
+    width: CARD_WIDTH,
+    height: CARD_HEIGHT,
+    borderRadius: 32,
+    padding: 16,
     justifyContent: "space-between",
-    alignItems: "center",
-    marginBottom: 16,
+    overflow: "hidden",
+    shadowColor: "#000",
+    shadowOffset: { width: 0, height: 3 },
+    shadowOpacity: 0.07,
+    shadowRadius: 12,
+    elevation: 3,
   },
-  titleRow: {
-    flex: 1,
-    flexDirection: "row",
-    alignItems: "center",
-    gap: 10,
-    marginRight: 12,
-  },
-  accentDot: {
-    width: 10,
-    height: 10,
-    borderRadius: 5,
+  cardDone: {
+    opacity: 0.55,
   },
   title: {
-    flex: 1,
-    fontSize: 16,
+    fontSize: 15,
+    lineHeight: 21,
+    color: "#1C1C1E",
+    maxWidth: "80%",
   },
   daysBadge: {
-    paddingHorizontal: 12,
-    paddingVertical: 5,
-    borderRadius: 20,
+    position: "absolute",
+    top: 12,
+    right: 12,
+    paddingHorizontal: 9,
+    paddingVertical: 4,
+    borderRadius: 14,
   },
   daysText: {
-    fontSize: 12,
+    fontSize: 11,
   },
-  ringContainer: {
-    alignItems: "center",
-    paddingVertical: 8,
+  emoji: {
+    position: "absolute",
+    bottom: 44,
+    right: 10,
+    fontSize: 48,
+    lineHeight: 56,
+    opacity: 0.85,
   },
-  ringPercent: {
-    fontSize: 18,
-  },
-  bottomRow: {
-    marginTop: 12,
+  bottom: {
     flexDirection: "row",
     alignItems: "center",
     justifyContent: "space-between",
   },
-  progressText: {
-    fontSize: 20,
-  },
-  completedRow: {
-    flexDirection: "row",
-    alignItems: "center",
-    gap: 6,
-  },
-  completedText: {
+  pct: {
     fontSize: 14,
   },
-  progressLabel: {
-    paddingHorizontal: 12,
-    paddingVertical: 5,
+  arrowBtn: {
+    width: 40,
+    height: 40,
     borderRadius: 20,
-  },
-  progressLabelText: {
-    fontSize: 12,
+    alignItems: "center",
+    justifyContent: "center",
   },
 });

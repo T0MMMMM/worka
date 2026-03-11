@@ -14,13 +14,16 @@ export function GradientPageLayout({ children, style }: GradientPageLayoutProps)
   const { colors } = useTheme();
   const mode = useThemeStore((s) => s.mode);
 
-  const gradientMid = mode === "dark" ? "#15152B" : "#e7e8f3ff";
+  const gradientColors: [string, string, string] =
+    mode === "dark"
+      ? ["#1A1510", "#221C14", "#1A1510"]
+      : ["#eeebf9ff", "#f5f4f9", "#e6e3f1ff"];
 
   return (
     <View style={[styles.container, { backgroundColor: colors.bg }, style]}>
       <LinearGradient
-        colors={[colors.bg, gradientMid, colors.bg]}
-        locations={[0, 0.45, 1]}
+        colors={gradientColors}
+        locations={[0, 0.5, 1]}
         style={styles.gradient}
       >
         <SafeAreaView style={styles.safeArea} edges={["top"]}>

@@ -6,6 +6,7 @@ export interface Objective {
   accent: string;
   daysLeft: number;
   completed: boolean;
+  image?: string;
   completedAt?: string;
   archivedAt?: string;
 }

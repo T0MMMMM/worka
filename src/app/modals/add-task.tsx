@@ -6,7 +6,7 @@ import {
 } from "@/src/components/modals";
 import {
   Briefcase,
-  Checklist,
+  Dashboard,
   Clock,
   Dumbbell,
   Flag,
@@ -76,7 +76,7 @@ export default function AddTaskModal() {
           <ModalHeader
             title="Nouvelle tâche"
             onClose={() => router.back()}
-            icon={<Checklist size={20} color={colors.accent} />}
+            icon={<Dashboard size={20} color={colors.accent} />}
           />
 
           <KeyboardAvoidingView

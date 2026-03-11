@@ -24,12 +24,14 @@ import {
 import DateTimePickerModal from "react-native-modal-datetime-picker";
 
 const COLORS = [
-  { label: "Bleu", color: "#2196F3" },
-  { label: "Violet", color: "#7B61FF" },
-  { label: "Rouge", color: "#EF4444" },
-  { label: "Vert", color: "#22C55E" },
-  { label: "Orange", color: "#F59E0B" },
+  { label: "Lavande", color: "#8A80C8", bg: "#C8C0E8" },
+  { label: "Or", color: "#B89A30", bg: "#E8D87A" },
+  { label: "Corail", color: "#C45040", bg: "#F0A898" },
+  { label: "Sauge", color: "#4A8A5A", bg: "#A8C8B0" },
+  { label: "Pêche", color: "#A06040", bg: "#E8D0C0" },
 ];
+
+const EMOJIS = ["🌿", "📚", "🏃", "🧘", "🎯", "💡", "🎨", "🌟", "🏋️", "✈️", "🎵", "💼"];
 
 export default function AddObjectiveModal() {
   const router = useRouter();
@@ -39,6 +41,7 @@ export default function AddObjectiveModal() {
   const [deadline, setDeadline] = useState(moment().add(30, "days").toDate());
   const [isDatePickerVisible, setDatePickerVisibility] = useState(false);
   const [selectedColor, setSelectedColor] = useState(COLORS[0]);
+  const [selectedEmoji, setSelectedEmoji] = useState<string | null>(EMOJIS[0]);
 
   return (
     <View style={styles.container}>
@@ -85,8 +88,8 @@ export default function AddObjectiveModal() {
                 </TouchableOpacity>
               </ModalSection>
 
-              <ModalSection label="Couleur">
-                <View style={styles.colorsGrid}>
+              <ModalSection label="Couleur de la carte">
+                <View style={styles.colorRow}>
                   {COLORS.map((c) => {
                     const active = selectedColor.label === c.label;
                     return (
@@ -94,21 +97,36 @@ export default function AddObjectiveModal() {
                         key={c.label}
                         onPress={() => setSelectedColor(c)}
                         style={[
-                          styles.colorPill,
-                          active
-                            ? { backgroundColor: c.color + "12", borderColor: c.color }
-                            : { borderColor: colors.border },
+                          styles.colorChip,
+                          { backgroundColor: c.bg },
+                          active && { borderWidth: 2, borderColor: c.color },
                         ]}
                       >
                         <View style={[styles.colorDot, { backgroundColor: c.color }]} />
-                        <Text
-                          style={[
-                            styles.colorLabel,
-                            { color: active ? c.color : colors.text, fontFamily: fonts.bold },
-                          ]}
-                        >
+                        <Text style={[styles.colorLabel, { color: c.color, fontFamily: fonts.semiBold }]}>
                           {c.label}
                         </Text>
+                      </TouchableOpacity>
+                    );
+                  })}
+                </View>
+              </ModalSection>
+
+              <ModalSection label="Icône">
+                <View style={styles.emojiGrid}>
+                  {EMOJIS.map((emoji) => {
+                    const active = selectedEmoji === emoji;
+                    return (
+                      <TouchableOpacity
+                        key={emoji}
+                        onPress={() => setSelectedEmoji(active ? null : emoji)}
+                        style={[
+                          styles.emojiBtn,
+                          { backgroundColor: active ? selectedColor.bg : colors.elevated },
+                          active && { borderWidth: 2, borderColor: selectedColor.color },
+                        ]}
+                      >
+                        <Text style={styles.emojiText}>{emoji}</Text>
                       </TouchableOpacity>
                     );
                   })}
@@ -117,19 +135,23 @@ export default function AddObjectiveModal() {
             </ScrollView>
           </KeyboardAvoidingView>
 
-          <ModalFooter label="Créer l'objectif" onPress={() => {
-            if (!title.trim()) return;
-            const daysLeft = moment(deadline).diff(moment(), "days");
-            useObjectiveStore.getState().addObjective({
-              title: title.trim(),
-              progress: 0,
-              color: selectedColor.color,
-              accent: selectedColor.color,
-              daysLeft: Math.max(0, daysLeft),
-              completed: false,
-            });
-            router.back();
-          }} />
+          <ModalFooter
+            label="Créer l'objectif"
+            onPress={() => {
+              if (!title.trim()) return;
+              const daysLeft = moment(deadline).diff(moment(), "days");
+              useObjectiveStore.getState().addObjective({
+                title: title.trim(),
+                progress: 0,
+                color: selectedColor.bg,   // pastel card background
+                accent: selectedColor.color, // accent for progress text
+                daysLeft: Math.max(0, daysLeft),
+                completed: false,
+                image: selectedEmoji || undefined,
+              });
+              router.back();
+            }}
+          />
         </View>
       </View>
 
@@ -150,7 +172,7 @@ const styles = StyleSheet.create({
   container: {
     flex: 1,
     justifyContent: "flex-end",
-    backgroundColor: "rgba(0,0,0,0.35)",
+    backgroundColor: "rgba(0,0,0,0.25)",
   },
   backdrop: {
     ...StyleSheet.absoluteFillObject,
@@ -196,27 +218,44 @@ const styles = StyleSheet.create({
   selectorText: {
     fontSize: 18,
   },
-  colorsGrid: {
+  colorRow: {
+    flexDirection: "row",
+    flexWrap: "wrap",
+    gap: 8,
+  },
+  colorChip: {
+    flexDirection: "row",
+    alignItems: "center",
+    paddingHorizontal: 14,
+    paddingVertical: 10,
+    borderRadius: 20,
+    gap: 8,
+    borderWidth: 2,
+    borderColor: "transparent",
+  },
+  colorDot: {
+    width: 10,
+    height: 10,
+    borderRadius: 5,
+  },
+  colorLabel: {
+    fontSize: 13,
+  },
+  emojiGrid: {
     flexDirection: "row",
     flexWrap: "wrap",
     gap: 10,
   },
-  colorPill: {
-    width: "47%",
-    flexDirection: "row",
-    alignItems: "center",
-    paddingHorizontal: 16,
-    paddingVertical: 14,
+  emojiBtn: {
+    width: 52,
+    height: 52,
     borderRadius: 16,
-    borderWidth: 1.5,
-    gap: 10,
+    justifyContent: "center",
+    alignItems: "center",
+    borderWidth: 2,
+    borderColor: "transparent",
   },
-  colorDot: {
-    width: 12,
-    height: 12,
-    borderRadius: 6,
-  },
-  colorLabel: {
-    fontSize: 14,
+  emojiText: {
+    fontSize: 24,
   },
 });

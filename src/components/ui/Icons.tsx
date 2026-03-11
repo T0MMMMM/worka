@@ -1,4 +1,4 @@
-import Svg, { Path } from "react-native-svg";
+import Svg, { Path, Rect } from "react-native-svg";
 
 // --- Icônes calendrier ---
 
@@ -31,7 +31,7 @@ export const Sparkle = ({ color = "black", size = 28 }) => (
   </Svg>
 );
 
-export const Checklist = ({ color = "black", size = 28 }) => (
+export const Dashboard = ({ color = "black", size = 28 }) => (
   <Svg
     width={size}
     height={size}
@@ -42,14 +42,28 @@ export const Checklist = ({ color = "black", size = 28 }) => (
     strokeLinecap="round"
     strokeLinejoin="round"
   >
-    <Path d="M3.5 5.5l1.5 1.5l2.5 -2.5" />
-    <Path d="M3.5 11.5l1.5 1.5l2.5 -2.5" />
-    <Path d="M3.5 17.5l1.5 1.5l2.5 -2.5" />
-    <Path d="M11 6l9 0" />
-    <Path d="M11 12l9 0" />
-    <Path d="M11 18l9 0" />
+    <Rect width="7" height="9" x="3" y="3" rx="1" />
+    <Rect width="7" height="5" x="14" y="3" rx="1" />
+    <Rect width="7" height="9" x="14" y="12" rx="1" />
+    <Rect width="7" height="5" x="3" y="16" rx="1" />
   </Svg>
 );
+
+export const House = ({ color = "black", size = 28 }) => (
+  <Svg
+    width={size}
+    height={size}
+    viewBox="0 0 24 24"
+    fill="none"
+    stroke={color}
+    strokeWidth="2"
+    strokeLinecap="round"
+    strokeLinejoin="round"
+  >
+    <Path d="M15 18H9"/>
+    <Path d="M21.6359 12.9579L21.3572 14.8952C20.8697 18.2827 20.626 19.9764 19.451 20.9882C18.2759 22 16.5526 22 13.1061 22H10.8939C7.44737 22 5.72409 22 4.54903 20.9882C3.37396 19.9764 3.13025 18.2827 2.64284 14.8952L2.36407 12.9579C1.98463 10.3208 1.79491 9.00229 2.33537 7.87495C2.87583 6.7476 4.02619 6.06234 6.32691 4.69181L7.71175 3.86687C9.80104 2.62229 10.8457 2 12 2C13.1543 2 14.199 2.62229 16.2882 3.86687L17.6731 4.69181C19.9738 6.06234 21.1242 6.7476 21.6646 7.87495"/>
+  </Svg>
+)
 
 export const UserCircle = ({ color = "black", size = 28 }) => (
   <Svg

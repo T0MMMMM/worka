@@ -6,30 +6,43 @@ import { Objective } from "../types/objective";
 const INITIAL_OBJECTIVES: Objective[] = [
   {
     id: "1",
-    title: "Apprendre React Native",
+    title: "Forces & Qualités personnelles",
     progress: 0.75,
-    color: "#2196F3",
-    accent: "#2196F3",
+    color: "#BEC8E8",   // periwinkle/lavender — matches image card 1
+    accent: "#6878C0",
     daysLeft: 12,
     completed: false,
+    image: "🌿",
   },
   {
     id: "2",
-    title: "Lire 2 livres par mois",
+    title: "Construire la confiance",
     progress: 0.4,
-    color: "#9C27B0",
-    accent: "#9C27B0",
+    color: "#e0cc81",   // warm yellow — matches image card 2
+    accent: "#9A8A00",
     daysLeft: 18,
     completed: false,
+    image: "🌱",
   },
   {
     id: "3",
     title: "Marathon de Paris",
     progress: 0.9,
-    color: "#FF5252",
-    accent: "#FF5252",
+    color: "#c9e0dd",   // mint/sage — matches image card 3
+    accent: "#3A7A50",
     daysLeft: 3,
     completed: false,
+    image: "🏃",
+  },
+  {
+    id: "4",
+    title: "Activation comportementale",
+    progress: 0.55,
+    color: "#eee1da",   // warm peach/beige — matches image card 4
+    accent: "#906040",
+    daysLeft: 25,
+    completed: false,
+    image: "🧘",
   },
 ];
 
@@ -99,7 +112,7 @@ export const useObjectiveStore = create<ObjectiveStore>()(
         }),
     }),
     {
-      name: "worka-objectives",
+      name: "worka-objectives-v3",
       storage: createJSONStorage(() => AsyncStorage),
     }
   )
