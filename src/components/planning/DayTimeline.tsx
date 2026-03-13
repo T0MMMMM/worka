@@ -1,70 +1,55 @@
 import { useTheme } from "@/src/hooks/useTheme";
 import { Task } from "@/src/types/task";
-import React, { useCallback, useMemo } from "react";
-import { StyleSheet, Text, View } from "react-native";
+import React, { useCallback, useEffect, useMemo, useRef } from "react";
+import { ScrollView, StyleSheet, Text, View } from "react-native";
 import { SwipeableTaskCard } from "./SwipeableTaskCard";
 
-const HOURS = Array.from({ length: 16 }, (_, i) => i + 7); // 7h–22h
+const HOURS = Array.from({ length: 24 }, (_, i) => i); // 0h–23h
+const SLOT_HEIGHT = 64; // approximate height of an empty slot for auto-scroll
 
 // ── Hour slot ─────────────────────────────────────────────────────────────────
 interface HourSlotProps {
   hour: number;
   tasks: Task[];
   isCurrent: boolean;
+  currentTimeStr: string;
   onToggle: (id: string) => void;
   onDelete: (id: string) => void;
 }
 
-function HourSlot({ hour, tasks, isCurrent, onToggle, onDelete }: HourSlotProps) {
+function HourSlot({ hour, tasks, isCurrent, currentTimeStr, onToggle, onDelete }: HourSlotProps) {
   const { colors, fonts } = useTheme();
   const label = `${hour.toString().padStart(2, "0")}:00`;
   const hasTasks = tasks.length > 0;
 
   return (
     <View style={styles.slot}>
-      {/* Time column */}
-      <View style={styles.timeCol}>
-        <Text
-          style={[
-            styles.timeLabel,
-            {
-              fontFamily: isCurrent ? fonts.bold : fonts.regular,
-              color: isCurrent ? colors.text : colors.textMuted,
-            },
-          ]}
-        >
-          {label}
-        </Text>
-      </View>
-
-      {/* Timeline line + dot */}
-      <View style={styles.lineCol}>
+      {/* Divider: full-width line + time label on right */}
+      <View style={styles.divider}>
         <View
           style={[
-            styles.hourDot,
+            styles.line,
             {
-              backgroundColor: isCurrent
-                ? colors.text
-                : hasTasks
-                ? colors.textSecondary
-                : colors.border,
-              width: isCurrent ? 9 : 6,
-              height: isCurrent ? 9 : 6,
-              borderRadius: 5,
-              marginTop: 2,
+              backgroundColor: isCurrent ? colors.accent : colors.border,
+              opacity: isCurrent ? 0.7 : 0.35,
             },
           ]}
         />
-        <View
-          style={[
-            styles.vLine,
-            { backgroundColor: colors.border, opacity: hasTasks ? 0.6 : 0.3 },
-          ]}
-        />
+        {isCurrent ? (
+          <View style={[styles.timeBadge, { backgroundColor: colors.accent }]}>
+            <Text style={[styles.timeBadgeText, { color: colors.bg, fontFamily: fonts.bold }]}>
+              {currentTimeStr}
+            </Text>
+          </View>
+        ) : (
+          <Text style={[styles.timeLabel, { color: hasTasks ? colors.textSecondary : colors.textMuted, fontFamily: fonts.regular }]}>
+            {label}
+          </Text>
+        )}
       </View>
 
-      {/* Content */}
-      <View style={styles.contentCol}>
+      {/* Cards or empty spacer */}
+      <View style={styles.cardsArea}>
         {hasTasks ? (
           tasks.map((task, i) => (
             <SwipeableTaskCard
@@ -76,9 +61,7 @@ function HourSlot({ hour, tasks, isCurrent, onToggle, onDelete }: HourSlotProps)
             />
           ))
         ) : (
-          <View style={styles.emptyLine}>
-            <View style={[styles.emptyDash, { backgroundColor: colors.border }]} />
-          </View>
+          <View style={{ height: 48 }} />
         )}
       </View>
     </View>
@@ -93,7 +76,11 @@ interface DayTimelineProps {
 }
 
 export function DayTimeline({ tasks, onToggle, onDelete }: DayTimelineProps) {
-  const currentHour = new Date().getHours();
+  const scrollRef = useRef<ScrollView>(null);
+
+  const now = new Date();
+  const currentHour = now.getHours();
+  const currentTimeStr = `${now.getHours().toString().padStart(2, "0")}:${now.getMinutes().toString().padStart(2, "0")}`;
 
   // Stable callbacks so React.memo on SwipeableTaskCard prevents unnecessary re-renders
   const stableToggle = useCallback((id: string) => onToggle(id), [onToggle]);
@@ -111,18 +98,35 @@ export function DayTimeline({ tasks, onToggle, onDelete }: DayTimelineProps) {
     return map;
   }, [tasks]);
 
+  // Auto-scroll to current hour on mount
+  useEffect(() => {
+    const offset = Math.max(0, currentHour - 1) * SLOT_HEIGHT;
+    setTimeout(() => {
+      scrollRef.current?.scrollTo({ y: offset, animated: false });
+    }, 100);
+  }, []);
+
   return (
     <View style={styles.container}>
-      {HOURS.map((hour) => (
-        <HourSlot
-          key={hour}
-          hour={hour}
-          tasks={tasksByHour[hour] ?? []}
-          isCurrent={hour === currentHour}
-          onToggle={stableToggle}
-          onDelete={stableDelete}
-        />
-      ))}
+      <ScrollView
+        ref={scrollRef}
+        style={styles.scroll}
+        showsVerticalScrollIndicator={false}
+      >
+        {HOURS.map((hour) => (
+          <HourSlot
+            key={hour}
+            hour={hour}
+            tasks={tasksByHour[hour] ?? []}
+            isCurrent={hour === currentHour}
+            currentTimeStr={currentTimeStr}
+            onToggle={stableToggle}
+            onDelete={stableDelete}
+          />
+        ))}
+        <View style={{ height: 120 }} />
+      </ScrollView>
+
     </View>
   );
 }
@@ -130,46 +134,57 @@ export function DayTimeline({ tasks, onToggle, onDelete }: DayTimelineProps) {
 // ── Styles ────────────────────────────────────────────────────────────────────
 const styles = StyleSheet.create({
   container: {
-    paddingHorizontal: 20,
+    flex: 1,
+    overflow: "hidden",
   },
-  slot: {
+  scroll: {
+    flex: 1,
+  },
+  slot: {},
+  divider: {
     flexDirection: "row",
-    minHeight: 48,
+    alignItems: "center",
+    paddingLeft: 20,
   },
-  timeCol: {
-    width: 54,
-    paddingRight: 4,
-    alignItems: "flex-end",
-    justifyContent: "center",
-    paddingBottom: 6,
+  line: {
+    flex: 1,
+    height: 1,
   },
   timeLabel: {
+    width: 56,
+    textAlign: "right",
     fontSize: 11,
-    lineHeight: 16,
+    paddingHorizontal: 8,
+    paddingVertical: 4,
   },
-  lineCol: {
-    width: 18,
-    alignItems: "center",
-    paddingTop: 2,
+  timeBadge: {
+    borderRadius: 10,
+    paddingHorizontal: 8,
+    paddingVertical: 3,
+    marginHorizontal: 8,
   },
-  hourDot: {},
-  vLine: {
-    flex: 1,
-    width: 1.5,
-    marginTop: 3,
+  timeBadgeText: {
+    fontSize: 11,
   },
-  contentCol: {
-    flex: 1,
-    paddingLeft: 12,
-    paddingVertical: 6,
+  cardsArea: {
+    paddingHorizontal: 20,
+    paddingTop: 6,
+    paddingBottom: 2,
   },
-  emptyLine: {
-    height: 42,
-    justifyContent: "center",
+  fadeTop: {
+    position: "absolute",
+    top: 0,
+    left: 0,
+    right: 0,
+    height: 56,
+    pointerEvents: "none",
   },
-  emptyDash: {
-    width: 24,
-    height: 1,
-    borderRadius: 1,
+  fadeBottom: {
+    position: "absolute",
+    bottom: 0,
+    left: 0,
+    right: 0,
+    height: 100,
+    pointerEvents: "none",
   },
 });

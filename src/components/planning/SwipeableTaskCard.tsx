@@ -184,20 +184,20 @@ function SwipeableTaskCardComponent({
                 </View>
               </View>
 
-              {/* Circle check button — green when done */}
+              {/* Status indicator — only visible when completed */}
               <TouchableOpacity
                 onPress={() => {
                   if (isRevealed) { snapBack(); return; }
                   onToggle(task.id);
                 }}
-                style={[
-                  styles.checkBtn,
-                  isCompleted
-                    ? { backgroundColor: "#22C55E" }
-                    : { backgroundColor: colors.elevated, borderWidth: 1.5, borderColor: colors.border },
-                ]}
+                style={styles.checkBtn}
+                hitSlop={{ top: 8, bottom: 8, left: 8, right: 8 }}
               >
-                {isCompleted && <CheckIcon size={13} color="#FFF" />}
+                {isCompleted && (
+                  <View style={styles.checkDone}>
+                    <CheckIcon size={10} color="#FFF" />
+                  </View>
+                )}
               </TouchableOpacity>
             </View>
           </TouchableOpacity>
@@ -242,7 +242,18 @@ const styles = StyleSheet.create({
     flex: 1,
     gap: 5,
   },
+  titleRow: {
+    flexDirection: "row",
+    alignItems: "center",
+    gap: 6,
+    flex: 1,
+  },
+  themeEmoji: {
+    fontSize: 15,
+    lineHeight: 18,
+  },
   title: {
+    flex: 1,
     fontSize: 14,
     lineHeight: 18,
   },
@@ -260,10 +271,18 @@ const styles = StyleSheet.create({
     fontSize: 11,
   },
   checkBtn: {
-    width: 28,
-    height: 28,
-    borderRadius: 14,
+    width: 22,
+    height: 22,
     alignItems: "center",
     justifyContent: "center",
+  },
+  checkDone: {
+    width: 20,
+    height: 20,
+    borderRadius: 10,
+    backgroundColor: "#22C55E",
+    alignItems: "center",
+    justifyContent: "center",
+    opacity: 0.9,
   },
 });

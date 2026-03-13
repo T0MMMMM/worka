@@ -7,7 +7,7 @@ import { useRouter } from "expo-router";
 import moment from "moment";
 import "moment/locale/fr";
 import React, { useState } from "react";
-import { ScrollView, StyleSheet, Text, View } from "react-native";
+import { StyleSheet, Text, View } from "react-native";
 
 moment.locale("fr");
 
@@ -24,11 +24,8 @@ export default function Planning() {
   return (
     <View style={styles.container}>
       <GradientPageLayout>
-        <ScrollView
-          showsVerticalScrollIndicator={false}
-          contentContainerStyle={styles.scrollContent}
-        >
-          {/* Top nav — scrolls with content */}
+        {/* Fixed header — does NOT scroll */}
+        <View>
           <View style={styles.topNavWrapper}>
             <TopNavBar
               onProfile={() => router.push("/profile")}
@@ -36,7 +33,6 @@ export default function Planning() {
             />
           </View>
 
-          {/* Hero: Month + Year */}
           <View style={styles.heroSection}>
             <Text style={[styles.heroLabel, { color: colors.textSecondary, fontFamily: fonts.regular }]}>
               Planning
@@ -51,10 +47,8 @@ export default function Planning() {
             </Text>
           </View>
 
-          {/* Calendar strip */}
           <Calendar selectedDate={selectedDate} onDateSelected={setSelectedDate} />
 
-          {/* Section title */}
           <View style={styles.sectionHeader}>
             <Text style={[styles.sectionTitle, { color: colors.text, fontFamily: fonts.bold }]}>
               Aujourd'hui
@@ -63,10 +57,10 @@ export default function Planning() {
               {tasks.length} tâche{tasks.length > 1 ? "s" : ""}
             </Text>
           </View>
+        </View>
 
-          {/* Task timeline */}
-          <DayTimeline tasks={tasks} onToggle={toggleTask} onDelete={deleteTask} />
-        </ScrollView>
+        {/* Timeline fills remaining space and scrolls internally */}
+        <DayTimeline tasks={tasks} onToggle={toggleTask} onDelete={deleteTask} />
       </GradientPageLayout>
     </View>
   );
@@ -78,9 +72,6 @@ const styles = StyleSheet.create({
     paddingHorizontal: 22,
     paddingTop: 14,
     paddingBottom: 26,
-  },
-  scrollContent: {
-    paddingBottom: 130,
   },
   heroSection: {
     paddingHorizontal: 22,
@@ -102,7 +93,7 @@ const styles = StyleSheet.create({
     justifyContent: "space-between",
     paddingHorizontal: 22,
     paddingTop: 14,
-    paddingBottom: 16,
+    paddingBottom: 10,
   },
   sectionTitle: {
     fontSize: 18,
