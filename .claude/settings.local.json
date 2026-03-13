@@ -2,7 +2,13 @@
   "permissions": {
     "allow": [
       "Bash(npx expo:*)",
-      "Bash(ls:*)"
+      "Bash(ls:*)",
+      "Bash(find \"c:\\\\Users\\\\tomyf\\\\Documents\\\\worka\\\\src\\\\app\\\\\\(tabs\\)\" -type f -name \"*.tsx\")",
+      "Bash(ls \"/c/Users/tomyf/Documents/worka/src/app/\\(tabs\\)\")",
+      "Bash(ls \"/c/Users/tomyf/Documents/worka/src/app/\\(tabs\\)/profile\")",
+      "Bash(ls \"/c/Users/tomyf/Documents/worka/src/app/\\(tabs\\)/objectives\")",
+      "Bash(ls \"/c/Users/tomyf/Documents/worka/src/app/\\(tabs\\)/planning\")",
+      "Bash(find c:UserstomyfDocumentsworkasrcstore -type f \\\\\\(-name *.tsx -o -name *.ts \\\\\\))"
     ]
   }
 }

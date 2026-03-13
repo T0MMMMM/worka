@@ -51,12 +51,9 @@ export default function RootLayout() {
           name="modals/add-objective"
           options={{ presentation: "modal", animation: "slide_from_bottom" }}
         />
+<Stack.Screen name="profile" />
         <Stack.Screen
-          name="modals/archive"
-          options={{ presentation: "modal", animation: "slide_from_bottom" }}
-        />
-        <Stack.Screen
-          name="modals/theme-picker"
+          name="modals/task-themes"
           options={{ presentation: "modal", animation: "slide_from_bottom" }}
         />
       </Stack>

@@ -2,16 +2,16 @@ import { useTheme } from "@/src/hooks/useTheme";
 import React from "react";
 import { StyleSheet, Text, TextInput, TextInputProps, View } from "react-native";
 
-interface ModalInputProps extends TextInputProps {
+interface AuthInputProps extends TextInputProps {
   label: string;
 }
 
-export function ModalInput({ label, style, ...props }: ModalInputProps) {
+export function AuthInput({ label, ...props }: AuthInputProps) {
   const { colors, fonts } = useTheme();
 
   return (
-    <View style={styles.container}>
-      <Text style={[styles.label, { color: colors.textSecondary, fontFamily: fonts.bold }]}>
+    <View style={styles.group}>
+      <Text style={[styles.label, { color: colors.textSecondary, fontFamily: fonts.semiBold }]}>
         {label}
       </Text>
       <TextInput
@@ -23,7 +23,6 @@ export function ModalInput({ label, style, ...props }: ModalInputProps) {
             borderColor: colors.border,
             fontFamily: fonts.regular,
           },
-          style,
         ]}
         placeholderTextColor={colors.textMuted}
         {...props}
@@ -33,20 +32,18 @@ export function ModalInput({ label, style, ...props }: ModalInputProps) {
 }
 
 const styles = StyleSheet.create({
-  container: {
-    marginBottom: 24,
+  group: {
+    gap: 8,
   },
   label: {
     fontSize: 13,
-    textTransform: "uppercase",
-    letterSpacing: 0.5,
-    marginBottom: 10,
+    letterSpacing: 0.3,
   },
   input: {
-    fontSize: 16,
+    height: 54,
     borderRadius: 16,
     paddingHorizontal: 18,
-    paddingVertical: 16,
+    fontSize: 16,
     borderWidth: 1,
   },
 });

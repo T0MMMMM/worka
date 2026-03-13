@@ -14,7 +14,6 @@ import {
   View,
 } from "react-native";
 import Svg, { Path, Circle } from "react-native-svg";
-import { useSafeAreaInsets } from "react-native-safe-area-context";
 
 // Back arrow
 const BackIcon = ({ size = 20, color = "#1C1C1E" }) => (
@@ -63,13 +62,6 @@ const ChevronRight = ({ size = 16, color = "#C8C0B8" }) => (
   </Svg>
 );
 
-// User avatar placeholder
-const AvatarIcon = ({ size = 64, color = "#9A9088" }) => (
-  <Svg width={size} height={size} viewBox="0 0 24 24" fill="none">
-    <Path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2" stroke={color} strokeWidth="1.5" strokeLinecap="round" />
-    <Circle cx="12" cy="7" r="4" stroke={color} strokeWidth="1.5" />
-  </Svg>
-);
 
 const USER = { name: "Thomas Delon", email: "thomas.d@worka.io", initials: "TD" };
 
@@ -132,7 +124,7 @@ export default function Profile() {
         {/* Back button */}
         <View style={styles.topNav}>
           <TouchableOpacity
-            style={[styles.backBtn, { backgroundColor: "rgba(255,255,255,0.6)" }]}
+            style={[styles.backBtn, { backgroundColor: colors.surface, borderWidth: 1, borderColor: colors.border }]}
             onPress={() => router.back()}
             activeOpacity={0.7}
           >
@@ -206,15 +198,9 @@ export default function Profile() {
             />
             <MenuRow
               icon={<View style={[styles.menuIcon, { backgroundColor: "#BEC8E830" }]}><PaletteIcon size={16} color="#5868B0" /></View>}
-              label="Couleur d'accent"
-              onPress={() => router.push("/modals/theme-picker")}
+              label="Thèmes de catégories"
+              onPress={() => router.push("/modals/task-themes")}
               noBorder
-              right={
-                <View style={styles.accentPreview}>
-                  <View style={[styles.accentDot, { backgroundColor: colors.accent }]} />
-                  <ChevronRight size={16} color={colors.textMuted} />
-                </View>
-              }
             />
           </View>
 

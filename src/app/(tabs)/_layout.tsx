@@ -139,7 +139,6 @@ export default function TabLayout() {
     >
       <Tabs.Screen name="objectives" />
       <Tabs.Screen name="planning" />
-      <Tabs.Screen name="profile" />
     </Tabs>
   );
 }
