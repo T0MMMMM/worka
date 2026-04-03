@@ -1,9 +1,12 @@
+// Supabase client singleton.
+// Session is persisted via AsyncStorage — users stay logged in across app restarts.
+// The Database generic is satisfied by src/types/database.ts (created in Task 3).
 import AsyncStorage from "@react-native-async-storage/async-storage";
 import { createClient } from "@supabase/supabase-js";
 import type { Database } from "../types/database";
 
-const SUPABASE_URL = "https://gocuruxfpsezhrxoxbzg.supabase.co";
-const SUPABASE_ANON_KEY = "sb_publishable_8FvqxPtwpjR-TcS1au0Fbw_PBEvtGc7";
+const SUPABASE_URL = process.env.EXPO_PUBLIC_SUPABASE_URL!;
+const SUPABASE_ANON_KEY = process.env.EXPO_PUBLIC_SUPABASE_ANON_KEY!;
 
 export const supabase = createClient<Database>(SUPABASE_URL, SUPABASE_ANON_KEY, {
   auth: {
