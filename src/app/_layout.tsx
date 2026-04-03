@@ -51,6 +51,9 @@ export default function RootLayout() {
               isLoggedIn: true,
             });
             router.replace("/(tabs)/planning");
+          } else {
+            // Clear any stale persisted auth state (e.g. expired refresh token).
+            useUserStore.getState().logout();
           }
         } else if (event === "SIGNED_IN" && session) {
           const profile = await getProfile(session.user.id);

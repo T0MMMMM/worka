@@ -41,8 +41,11 @@ export default function RegisterPage() {
     if ("error" in result) {
       setError(result.error);
       setLoading(false);
+    } else if (result.needsConfirmation) {
+      setLoading(false);
+      setError("Vérifiez votre email pour confirmer votre inscription.");
     }
-    // On success: onAuthStateChange in _layout.tsx handles navigation.
+    // If needsConfirmation is false: onAuthStateChange in _layout.tsx handles navigation.
   }
 
   return (

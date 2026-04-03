@@ -40,7 +40,7 @@ export async function signUp(
   email: string,
   password: string,
   name: string
-): Promise<{ user: User } | { error: string }> {
+): Promise<{ user: User; needsConfirmation: boolean } | { error: string }> {
   const { data, error } = await supabase.auth.signUp({
     email,
     password,
@@ -48,7 +48,10 @@ export async function signUp(
   });
   if (error) return { error: mapError(error.message) };
   if (!data.user) return { error: "Impossible de créer le compte." };
-  return { user: data.user };
+  // needsConfirmation is true when email confirmations are enabled in Supabase
+  // and the user has not yet clicked the confirmation link.
+  const needsConfirmation = data.user.identities?.length === 0 || !data.session;
+  return { user: data.user, needsConfirmation };
 }
 
 // ── signOut ───────────────────────────────────────────────────────────────────
