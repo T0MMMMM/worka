@@ -54,16 +54,18 @@ export async function signUp(
 // ── signOut ───────────────────────────────────────────────────────────────────
 
 export async function signOut(): Promise<void> {
-  await supabase.auth.signOut();
+  const { error } = await supabase.auth.signOut();
+  if (error) console.error("[auth] signOut error:", error.message);
 }
 
 // ── getProfile ────────────────────────────────────────────────────────────────
 
 export async function getProfile(userId: string): Promise<ProfileRow | null> {
-  const { data } = await supabase
+  const { data, error } = await supabase
     .from("profiles")
     .select("*")
     .eq("id", userId)
     .single();
+  if (error) console.error("[auth] getProfile error:", error.message);
   return data ?? null;
 }
