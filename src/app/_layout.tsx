@@ -34,36 +34,32 @@ export default function RootLayout() {
     if (loaded || error) {
       SplashScreen.hideAsync();
     }
-  }, [loaded, error]);
 
-  // Auth state listener — drives navigation for the entire app.
-  useEffect(() => {
+    // Only register the auth listener once fonts are ready to avoid
+    // navigating before the navigator is mounted.
+    if (!loaded && !error) return;
+
     const { data: { subscription } } = supabase.auth.onAuthStateChange(
       async (event, session) => {
         if (event === "INITIAL_SESSION") {
           if (session) {
             const profile = await getProfile(session.user.id);
-            if (profile) {
-              useUserStore.getState().setUser({
-                name: profile.name ?? "",
-                email: profile.email ?? session.user.email ?? "",
-                avatarUrl: profile.avatar_url ?? null,
-                isLoggedIn: true,
-              });
-            }
-            router.replace("/(tabs)/planning");
-          }
-          // No session → stay on WelcomePage (index), no navigation needed.
-        } else if (event === "SIGNED_IN" && session) {
-          const profile = await getProfile(session.user.id);
-          if (profile) {
             useUserStore.getState().setUser({
-              name: profile.name ?? "",
-              email: profile.email ?? session.user.email ?? "",
-              avatarUrl: profile.avatar_url ?? null,
+              name: profile?.name ?? "",
+              email: profile?.email ?? session.user.email ?? "",
+              avatarUrl: profile?.avatar_url ?? null,
               isLoggedIn: true,
             });
+            router.replace("/(tabs)/planning");
           }
+        } else if (event === "SIGNED_IN" && session) {
+          const profile = await getProfile(session.user.id);
+          useUserStore.getState().setUser({
+            name: profile?.name ?? "",
+            email: profile?.email ?? session.user.email ?? "",
+            avatarUrl: profile?.avatar_url ?? null,
+            isLoggedIn: true,
+          });
           router.replace("/(tabs)/planning");
         } else if (event === "SIGNED_OUT") {
           useUserStore.getState().logout();
@@ -73,7 +69,7 @@ export default function RootLayout() {
     );
 
     return () => subscription.unsubscribe();
-  }, []);
+  }, [loaded, error, router]);
 
   if (!loaded && !error) {
     return null;
