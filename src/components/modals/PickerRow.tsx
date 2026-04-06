@@ -1,42 +1,45 @@
 import { useTheme } from "@/src/hooks/useTheme";
 import { useThemeStore } from "@/src/store/themeStore";
 import React from "react";
-import { StyleSheet, Text, TextInput, TextInputProps, View } from "react-native";
+import { StyleSheet, Text, TouchableOpacity, View } from "react-native";
 
-interface ModalInputProps extends TextInputProps {
+interface PickerRowProps {
   label: string;
+  value: string;
+  icon: React.ReactNode;
+  onPress: () => void;
 }
 
-export function ModalInput({ label, style, ...props }: ModalInputProps) {
+export function PickerRow({ label, value, icon, onPress }: PickerRowProps) {
   const { colors, fonts } = useTheme();
   const mode = useThemeStore((s) => s.mode);
   const isDark = mode === "dark";
 
   return (
-    <View style={styles.container}>
+    <View style={styles.wrapper}>
       <Text style={[styles.label, { color: colors.textSecondary, fontFamily: fonts.bold }]}>
         {label}
       </Text>
-      <TextInput
+      <TouchableOpacity
+        onPress={onPress}
+        activeOpacity={0.7}
         style={[
-          styles.input,
+          styles.row,
           {
             backgroundColor: isDark ? "rgba(255,255,255,0.06)" : "rgba(255,255,255,0.55)",
-            color: colors.text,
             borderColor: isDark ? "rgba(255,255,255,0.1)" : "rgba(255,255,255,0.45)",
-            fontFamily: fonts.regular,
           },
-          style,
         ]}
-        placeholderTextColor={colors.textMuted}
-        {...props}
-      />
+      >
+        {icon}
+        <Text style={[styles.value, { color: colors.text, fontFamily: fonts.bold }]}>{value}</Text>
+      </TouchableOpacity>
     </View>
   );
 }
 
 const styles = StyleSheet.create({
-  container: {
+  wrapper: {
     marginBottom: 24,
   },
   label: {
@@ -46,12 +49,17 @@ const styles = StyleSheet.create({
     marginBottom: 10,
     textAlign: "center",
   },
-  input: {
-    fontSize: 16,
+  row: {
+    flexDirection: "row",
+    alignItems: "center",
+    justifyContent: "center",
     borderRadius: 20,
-    paddingHorizontal: 20,
     paddingVertical: 18,
+    paddingHorizontal: 20,
     borderWidth: 1,
-    textAlign: "center",
+    gap: 10,
+  },
+  value: {
+    fontSize: 18,
   },
 });

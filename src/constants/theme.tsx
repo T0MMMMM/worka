@@ -14,6 +14,8 @@ export type ThemeColors = {
   warningSoft: string;
   danger: string;
   dangerSoft: string;
+  dangerSubtle: string;
+  cardOverlay: string;
 };
 
 export type ThemeFonts = {
@@ -53,24 +55,28 @@ export const lightColors: ThemeColors = {
   warningSoft: "rgba(212,168,74,0.15)",
   danger: "#D96B5A",
   dangerSoft: "rgba(217,107,90,0.15)",
+  dangerSubtle: "#FDF0EC",
+  cardOverlay: "rgba(255,255,255,0.65)",
 };
 
 export const darkColors: ThemeColors = {
-  bg: "#1A1510",
-  surface: "#2A2218",
-  elevated: "#352D22",
+  bg: "#0E0E12",
+  surface: "#18181F",
+  elevated: "#222229",
   border: "rgba(255,255,255,0.08)",
-  accent: "#E8D5C4",
-  accentSoft: "rgba(232,213,196,0.12)",
-  text: "#F0EAE4",
-  textSecondary: "#9A8C80",
-  textMuted: "#5A5048",
+  accent: "#C0C0D4",
+  accentSoft: "rgba(192,192,212,0.12)",
+  text: "#EEEEF2",
+  textSecondary: "#84849A",
+  textMuted: "#44445A",
   success: "#7BA68A",
   successSoft: "rgba(123,166,138,0.15)",
   warning: "#D4A84A",
   warningSoft: "rgba(212,168,74,0.15)",
   danger: "#D96B5A",
   dangerSoft: "rgba(217,107,90,0.15)",
+  dangerSubtle: "rgba(217,107,90,0.08)",
+  cardOverlay: "rgba(255,255,255,0.15)",
 };
 
 export const lightTheme: ThemeConfig = { colors: lightColors, fonts };
@@ -80,5 +86,4 @@ export function getTheme(mode: "light" | "dark"): ThemeConfig {
   return mode === "dark" ? darkTheme : lightTheme;
 }
 
-// Default export for backward compatibility during migration
 export const theme = lightTheme;

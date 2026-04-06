@@ -8,7 +8,12 @@
       "Bash(ls \"/c/Users/tomyf/Documents/worka/src/app/\\(tabs\\)/profile\")",
       "Bash(ls \"/c/Users/tomyf/Documents/worka/src/app/\\(tabs\\)/objectives\")",
       "Bash(ls \"/c/Users/tomyf/Documents/worka/src/app/\\(tabs\\)/planning\")",
-      "Bash(find c:UserstomyfDocumentsworkasrcstore -type f \\\\\\(-name *.tsx -o -name *.ts \\\\\\))"
+      "Bash(find c:UserstomyfDocumentsworkasrcstore -type f \\\\\\(-name *.tsx -o -name *.ts \\\\\\))",
+      "Bash(find /c/Users/tomyf/Documents/worka/src -name *color* -o -name *picker*)",
+      "Bash(git add:*)",
+      "Bash(git commit:*)",
+      "Bash(git:*)",
+      "Bash(npx tsc:*)"
     ]
   }
 }

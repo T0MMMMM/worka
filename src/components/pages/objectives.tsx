@@ -11,6 +11,7 @@ export default function Objectives() {
   const { colors, fonts } = useTheme();
   const objectives = useObjectiveStore((s) => s.objectives);
   const updateProgress = useObjectiveStore((s) => s.updateProgress);
+  const deleteObjective = useObjectiveStore((s) => s.deleteObjective);
 
   return (
     <View style={styles.container}>
@@ -41,7 +42,7 @@ export default function Objectives() {
           </View>
 
           {/* Cards grid */}
-          <ObjectivesList objectives={objectives} onUpdateProgress={updateProgress} />
+          <ObjectivesList objectives={objectives} onUpdateProgress={updateProgress} onDelete={deleteObjective} />
 
           {/* Rapport d'objectifs */}
           <ObjectiveReport objectives={objectives} />

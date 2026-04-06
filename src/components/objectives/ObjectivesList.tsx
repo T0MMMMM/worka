@@ -6,9 +6,10 @@ import { ObjectiveItem } from "./ObjectiveItem";
 interface ObjectivesListProps {
   objectives: Objective[];
   onUpdateProgress: (id: string, progress: number, completed: boolean) => void;
+  onDelete: (id: string) => void;
 }
 
-export function ObjectivesList({ objectives, onUpdateProgress }: ObjectivesListProps) {
+export function ObjectivesList({ objectives, onUpdateProgress, onDelete }: ObjectivesListProps) {
   // Build rows of 2
   const rows: Objective[][] = [];
   for (let i = 0; i < objectives.length; i += 2) {
@@ -25,6 +26,7 @@ export function ObjectivesList({ objectives, onUpdateProgress }: ObjectivesListP
               objective={obj}
               index={rowIdx * 2 + i}
               onUpdateProgress={onUpdateProgress}
+              onDelete={onDelete}
             />
           ))}
           {/* Phantom to maintain layout if odd count */}

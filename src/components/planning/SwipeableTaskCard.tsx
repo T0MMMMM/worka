@@ -1,5 +1,5 @@
 import { useTheme } from "@/src/hooks/useTheme";
-import { useTaskThemeStore } from "@/src/store/taskThemeStore";
+import { useTaskStore } from "@/src/store/taskStore";
 import { Task } from "@/src/types/task";
 import { MotiView } from "moti";
 import React, { memo, useCallback, useRef, useState } from "react";
@@ -13,8 +13,8 @@ import Animated, {
 } from "react-native-reanimated";
 import Svg, { Path } from "react-native-svg";
 
-const REVEAL_X = -60;
-const TRIGGER = -25;
+const REVEAL_X = -64;
+const TRIGGER = -30;
 
 const PRIORITY_COLORS: Record<string, string> = {
   high: "#EF4444",
@@ -60,7 +60,7 @@ function SwipeableTaskCardComponent({
   onDelete,
 }: SwipeableTaskCardProps) {
   const { colors, fonts } = useTheme();
-  const themes = useTaskThemeStore((s) => s.themes);
+  const themes = useTaskStore((s) => s.themes);
   const themeEmoji = themes.find((t) => t.label === task.category)?.emoji ?? "📌";
   const translateX = useSharedValue(0);
   const [isRevealed, setIsRevealed] = useState(false);
@@ -70,7 +70,7 @@ function SwipeableTaskCardComponent({
   const hasAnimated = useRef(false);
 
   const snapBack = useCallback(() => {
-    translateX.value = withSpring(0, { damping: 18, stiffness: 200 });
+    translateX.value = withSpring(0, { damping: 28, stiffness: 180 });
     setIsRevealed(false);
   }, []);
 
@@ -90,10 +90,10 @@ function SwipeableTaskCardComponent({
     })
     .onEnd(() => {
       if (translateX.value < TRIGGER) {
-        translateX.value = withSpring(REVEAL_X, { damping: 18, stiffness: 200 });
+        translateX.value = withSpring(REVEAL_X, { damping: 28, stiffness: 180 });
         runOnJS(setIsRevealed)(true);
       } else {
-        translateX.value = withSpring(0, { damping: 18, stiffness: 200 });
+        translateX.value = withSpring(0, { damping: 28, stiffness: 180 });
         runOnJS(setIsRevealed)(false);
       }
     });
@@ -140,11 +140,16 @@ function SwipeableTaskCardComponent({
               },
             ]}
           >
-            {/* Colored tint overlay — opaque surface + theme color tint */}
+            {/* Color tint overlay */}
             <View
               style={[
                 StyleSheet.absoluteFill,
-                { backgroundColor: task.color + "28", borderRadius: 14 },
+                {
+                  backgroundColor: isCompleted
+                    ? task.color + "55"
+                    : task.color + "28",
+                  borderRadius: 14,
+                },
               ]}
             />
 

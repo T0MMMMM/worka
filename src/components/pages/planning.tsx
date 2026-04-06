@@ -1,13 +1,13 @@
-import { DayTimeline } from "@/src/components/planning/DayTimeline";
+import { DayTimeline, DayTimelineRef } from "@/src/components/planning/DayTimeline";
 import { GradientPageLayout, TopNavBar } from "@/src/components/shared";
-import { Calendar } from "@/src/components/ui/Calendar";
+import { Calendar, CalendarRef } from "@/src/components/ui/Calendar";
 import { useTheme } from "@/src/hooks/useTheme";
 import { useTaskStore } from "@/src/store/taskStore";
 import { useRouter } from "expo-router";
 import moment from "moment";
 import "moment/locale/fr";
-import React, { useState } from "react";
-import { StyleSheet, Text, View } from "react-native";
+import React, { useRef, useState } from "react";
+import { StyleSheet, Text, TouchableOpacity, View } from "react-native";
 
 moment.locale("fr");
 
@@ -17,19 +17,33 @@ export default function Planning() {
   const router = useRouter();
   const { colors, fonts } = useTheme();
   const [selectedDate, setSelectedDate] = useState(moment());
-  const tasks = useTaskStore((s) => s.tasks);
+  const calendarRef = useRef<CalendarRef>(null);
+  const timelineRef = useRef<DayTimelineRef>(null);
+  const allTasks = useTaskStore((s) => s.tasks);
   const toggleTask = useTaskStore((s) => s.toggleTask);
   const deleteTask = useTaskStore((s) => s.deleteTask);
+
+  const isToday = selectedDate.isSame(moment(), "day");
+  const todayStr = moment().format("YYYY-MM-DD");
+  const selectedStr = selectedDate.format("YYYY-MM-DD");
+
+  // Tasks without a date are treated as today's tasks (legacy)
+  const tasks = allTasks.filter((t) => (t.date ?? todayStr) === selectedStr);
+
+  const goToToday = () => {
+    const t = moment();
+    setSelectedDate(t);
+    calendarRef.current?.scrollToDate(t, true);
+  };
 
   return (
     <View style={styles.container}>
       <GradientPageLayout>
-        {/* Fixed header — does NOT scroll */}
         <View>
           <View style={styles.topNavWrapper}>
             <TopNavBar
               onProfile={() => router.push("/profile")}
-              onAdd={() => router.push("/modals/add-task")}
+              onAdd={() => router.push({ pathname: "/modals/add-task", params: { date: selectedStr } })}
             />
           </View>
 
@@ -37,30 +51,44 @@ export default function Planning() {
             <Text style={[styles.heroLabel, { color: colors.textSecondary, fontFamily: fonts.regular }]}>
               Planning
             </Text>
-            <Text style={[styles.heroTitle, { color: colors.text }]}>
-              <Text style={{ fontFamily: fonts.light }}>
-                {capitalize(selectedDate.format("MMMM"))}{" "}
+            <View style={styles.heroTitleRow}>
+              <Text style={[styles.heroTitle, { color: colors.text }]}>
+                <Text style={{ fontFamily: fonts.light }}>
+                  {capitalize(selectedDate.format("MMMM"))}{" "}
+                </Text>
+                <Text style={{ fontFamily: fonts.extraBold }}>
+                  {selectedDate.format("YYYY")}
+                </Text>
               </Text>
-              <Text style={{ fontFamily: fonts.extraBold }}>
-                {selectedDate.format("YYYY")}
-              </Text>
-            </Text>
+              {!isToday && (
+                <TouchableOpacity
+                  onPress={goToToday}
+                  activeOpacity={0.7}
+                  style={[styles.todayBtn, { backgroundColor: colors.accentSoft }]}
+                >
+                  <Text style={[styles.todayBtnText, { color: colors.accent, fontFamily: fonts.semiBold }]}>
+                    Aujourd'hui
+                  </Text>
+                </TouchableOpacity>
+              )}
+            </View>
           </View>
 
-          <Calendar selectedDate={selectedDate} onDateSelected={setSelectedDate} />
+          <Calendar ref={calendarRef} selectedDate={selectedDate} onDateSelected={setSelectedDate} />
 
           <View style={styles.sectionHeader}>
             <Text style={[styles.sectionTitle, { color: colors.text, fontFamily: fonts.bold }]}>
-              Aujourd'hui
+              {isToday ? "Aujourd'hui" : capitalize(selectedDate.format("dddd D"))}
             </Text>
-            <Text style={[styles.sectionCount, { color: colors.textSecondary, fontFamily: fonts.regular }]}>
-              {tasks.length} tâche{tasks.length > 1 ? "s" : ""}
-            </Text>
+            <TouchableOpacity onPress={() => timelineRef.current?.scrollToNextTask()} activeOpacity={0.6}>
+              <Text style={[styles.sectionCount, { color: colors.textSecondary, fontFamily: fonts.regular }]}>
+                {tasks.length} tâche{tasks.length > 1 ? "s" : ""}
+              </Text>
+            </TouchableOpacity>
           </View>
         </View>
 
-        {/* Timeline fills remaining space and scrolls internally */}
-        <DayTimeline tasks={tasks} onToggle={toggleTask} onDelete={deleteTask} />
+        <DayTimeline ref={timelineRef} tasks={tasks} isToday={isToday} onToggle={toggleTask} onDelete={deleteTask} />
       </GradientPageLayout>
     </View>
   );
@@ -83,9 +111,22 @@ const styles = StyleSheet.create({
     marginBottom: 4,
     letterSpacing: 0.3,
   },
+  heroTitleRow: {
+    flexDirection: "row",
+    alignItems: "center",
+    justifyContent: "space-between",
+  },
   heroTitle: {
     fontSize: 32,
     lineHeight: 40,
+  },
+  todayBtn: {
+    paddingHorizontal: 14,
+    paddingVertical: 7,
+    borderRadius: 20,
+  },
+  todayBtnText: {
+    fontSize: 13,
   },
   sectionHeader: {
     flexDirection: "row",

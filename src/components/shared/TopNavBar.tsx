@@ -1,7 +1,8 @@
 import { Plus, UserCircle } from "@/src/components/ui/Icons";
 import { useTheme } from "@/src/hooks/useTheme";
+import { useUserStore } from "@/src/store/userStore";
 import React from "react";
-import { StyleSheet, TouchableOpacity, View } from "react-native";
+import { Image, StyleSheet, Text, TouchableOpacity, View } from "react-native";
 
 interface TopNavBarProps {
   onProfile: () => void;
@@ -9,7 +10,12 @@ interface TopNavBarProps {
 }
 
 export function TopNavBar({ onProfile, onAdd }: TopNavBarProps) {
-  const { colors } = useTheme();
+  const { colors, fonts } = useTheme();
+  const { name, avatarUrl, isLoggedIn } = useUserStore();
+
+  const initials = isLoggedIn && name
+    ? name.split(" ").map((w) => w[0]).slice(0, 2).join("").toUpperCase()
+    : null;
 
   return (
     <View style={styles.row}>
@@ -18,7 +24,15 @@ export function TopNavBar({ onProfile, onAdd }: TopNavBarProps) {
         onPress={onProfile}
         activeOpacity={0.7}
       >
-        <UserCircle size={20} color={colors.textSecondary} />
+        {avatarUrl ? (
+          <Image source={{ uri: avatarUrl }} style={styles.avatar} />
+        ) : initials ? (
+          <Text style={[styles.initials, { color: colors.accent, fontFamily: fonts.bold }]}>
+            {initials}
+          </Text>
+        ) : (
+          <UserCircle size={20} color={colors.textSecondary} />
+        )}
       </TouchableOpacity>
 
       <TouchableOpacity
@@ -54,5 +68,13 @@ const styles = StyleSheet.create({
     shadowOpacity: 0.18,
     shadowRadius: 10,
     elevation: 4,
+  },
+  avatar: {
+    width: 42,
+    height: 42,
+    borderRadius: 21,
+  },
+  initials: {
+    fontSize: 15,
   },
 });

@@ -21,15 +21,15 @@ export function UrgentSection({ objectives }: UrgentSectionProps) {
       transition={{ type: "timing", duration: 350 }}
       style={styles.container}
     >
-      <View style={[styles.card, { backgroundColor: "#FDF0EC" }]}>
+      <View style={[styles.card, { backgroundColor: colors.dangerSubtle }]}>
         <View style={styles.headerRow}>
-          <View style={[styles.iconBox, { backgroundColor: "#F4DDD9" }]}>
-            <Clock size={14} color="#D96B5A" />
+          <View style={[styles.iconBox, { backgroundColor: colors.dangerSoft }]}>
+            <Clock size={14} color={colors.danger} />
           </View>
-          <Text style={[styles.headerText, { color: "#D96B5A", fontFamily: fonts.bold }]}>
+          <Text style={[styles.headerText, { color: colors.danger, fontFamily: fonts.bold }]}>
             Bientôt à échéance
           </Text>
-          <View style={[styles.countBadge, { backgroundColor: "#D96B5A" }]}>
+          <View style={[styles.countBadge, { backgroundColor: colors.danger }]}>
             <Text style={[styles.countText, { fontFamily: fonts.bold }]}>
               {soonEnding.length}
             </Text>
@@ -46,8 +46,8 @@ export function UrgentSection({ objectives }: UrgentSectionProps) {
               >
                 {obj.image ? `${obj.image} ` : ""}{obj.title}
               </Text>
-              <View style={[styles.daysChip, { backgroundColor: "#F4DDD9" }]}>
-                <Text style={[styles.daysText, { color: "#D96B5A", fontFamily: fonts.bold }]}>
+              <View style={[styles.daysChip, { backgroundColor: colors.dangerSoft }]}>
+                <Text style={[styles.daysText, { color: colors.danger, fontFamily: fonts.bold }]}>
                   {obj.daysLeft}j
                 </Text>
               </View>

@@ -1,7 +1,11 @@
 import { useTheme } from "@/src/hooks/useTheme";
 import { Task } from "@/src/types/task";
-import React, { useCallback, useEffect, useMemo, useRef } from "react";
+import React, { useCallback, useEffect, useImperativeHandle, useMemo, useRef } from "react";
 import { ScrollView, StyleSheet, Text, View } from "react-native";
+
+export interface DayTimelineRef {
+  scrollToNextTask: () => void;
+}
 import { SwipeableTaskCard } from "./SwipeableTaskCard";
 
 const HOURS = Array.from({ length: 24 }, (_, i) => i); // 0h–23h
@@ -31,21 +35,21 @@ function HourSlot({ hour, tasks, isCurrent, currentTimeStr, onToggle, onDelete }
             styles.line,
             {
               backgroundColor: isCurrent ? colors.accent : colors.border,
-              opacity: isCurrent ? 0.7 : 0.35,
+              opacity: isCurrent ? 0.8 : 0.5,
             },
           ]}
         />
-        {isCurrent ? (
-          <View style={[styles.timeBadge, { backgroundColor: colors.accent }]}>
-            <Text style={[styles.timeBadgeText, { color: colors.bg, fontFamily: fonts.bold }]}>
-              {currentTimeStr}
-            </Text>
-          </View>
-        ) : (
-          <Text style={[styles.timeLabel, { color: hasTasks ? colors.textSecondary : colors.textMuted, fontFamily: fonts.regular }]}>
-            {label}
-          </Text>
-        )}
+        <Text
+          style={[
+            styles.timeLabel,
+            {
+              color: isCurrent ? colors.accent : colors.textSecondary,
+              fontFamily: isCurrent ? fonts.bold : fonts.regular,
+            },
+          ]}
+        >
+          {isCurrent ? currentTimeStr : label}
+        </Text>
       </View>
 
       {/* Cards or empty spacer */}
@@ -71,15 +75,17 @@ function HourSlot({ hour, tasks, isCurrent, currentTimeStr, onToggle, onDelete }
 // ── Main component ────────────────────────────────────────────────────────────
 interface DayTimelineProps {
   tasks: Task[];
+  isToday: boolean;
   onToggle: (id: string) => void;
   onDelete: (id: string) => void;
 }
 
-export function DayTimeline({ tasks, onToggle, onDelete }: DayTimelineProps) {
+export const DayTimeline = React.forwardRef<DayTimelineRef, DayTimelineProps>(
+function DayTimeline({ tasks, isToday, onToggle, onDelete }, ref) {
   const scrollRef = useRef<ScrollView>(null);
 
   const now = new Date();
-  const currentHour = now.getHours();
+  const currentHour = isToday ? now.getHours() : -1;
   const currentTimeStr = `${now.getHours().toString().padStart(2, "0")}:${now.getMinutes().toString().padStart(2, "0")}`;
 
   // Stable callbacks so React.memo on SwipeableTaskCard prevents unnecessary re-renders
@@ -98,6 +104,18 @@ export function DayTimeline({ tasks, onToggle, onDelete }: DayTimelineProps) {
     return map;
   }, [tasks]);
 
+  useImperativeHandle(ref, () => ({
+    scrollToNextTask: () => {
+      const hours = Object.keys(tasksByHour).map(Number).sort((a, b) => a - b);
+      if (hours.length === 0) return;
+      const targetHour = isToday
+        ? hours.find((h) => h >= currentHour) ?? hours[0]
+        : hours[0];
+      const offset = Math.max(0, targetHour + 1) * SLOT_HEIGHT;
+      scrollRef.current?.scrollTo({ y: offset, animated: true });
+    },
+  }), [tasksByHour, isToday, currentHour]);
+
   // Auto-scroll to current hour on mount
   useEffect(() => {
     const offset = Math.max(0, currentHour - 1) * SLOT_HEIGHT;
@@ -112,6 +130,8 @@ export function DayTimeline({ tasks, onToggle, onDelete }: DayTimelineProps) {
         ref={scrollRef}
         style={styles.scroll}
         showsVerticalScrollIndicator={false}
+        snapToInterval={SLOT_HEIGHT}
+        decelerationRate="fast"
       >
         {HOURS.map((hour) => (
           <HourSlot
@@ -129,7 +149,7 @@ export function DayTimeline({ tasks, onToggle, onDelete }: DayTimelineProps) {
 
     </View>
   );
-}
+});
 
 // ── Styles ────────────────────────────────────────────────────────────────────
 const styles = StyleSheet.create({
@@ -153,18 +173,9 @@ const styles = StyleSheet.create({
   timeLabel: {
     width: 56,
     textAlign: "right",
-    fontSize: 11,
+    fontSize: 12,
     paddingHorizontal: 8,
     paddingVertical: 4,
-  },
-  timeBadge: {
-    borderRadius: 10,
-    paddingHorizontal: 8,
-    paddingVertical: 3,
-    marginHorizontal: 8,
-  },
-  timeBadgeText: {
-    fontSize: 11,
   },
   cardsArea: {
     paddingHorizontal: 20,

@@ -14,6 +14,7 @@ export interface Task {
   category: string;
   color: string;
   priority: "high" | "medium" | "low";
+  date?: string; // "YYYY-MM-DD"
   order?: number;
   completedAt?: string;
   archivedAt?: string;
